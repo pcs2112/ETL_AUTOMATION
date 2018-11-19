@@ -1,0 +1,31 @@
+{
+    "SOURCE_SERVER": "localhost",
+    "SOURCE_DATABASE": "UMA_DWH",
+    "SOURCE_SCHEMA": "MWH",
+    "SOURCE_TABLE": "ERROR_RESOLUTIONS",
+    "SOURCE_DATA_MART": "MARKETING",
+    "SOURCE_TABLE_SEARCH_COLUMN": {
+        "column_name": "UPDATE_DTTM",
+        "is_utc": true
+    },
+    "SOURCE_TABLE_SEARCH_CONDITION": "and ID is NOT null",
+    "TARGET_SERVER": "localhost",
+    "TARGET_DATABASE": "UMA_DWH",
+    "TARGET_SCHEMA": "MWH",
+    "TARGET_TABLE": "ERROR_RESOLUTIONS",
+    "TARGET_TABLE_KEY_COLUMNS": [],
+    "TARGET_TABLE_EXTRA_COLUMNS": [
+        {
+            "column_name": "D_LION_PropertyValue_ID",
+            "data_type": "[varchar(80)] NOT NULL",
+            "value": "S_LION.Get_LionPropertyValue_ID(source.PropertyDefinitionId, source.EntityTypeId, source.NewValue)"
+        }
+    ],
+    "DATA_PARTITION": "PRIMARY",
+    "DATA_PARTITION_COLUMN": "",
+    "STORED_PROCEDURE_NAME": "MERGE_<TARGET_TABLE>",
+    "UPDATE_MATCH_CHECK_COLUMNS": [
+        "UPDATE_DTTM",
+        "INSERT_DTTM"
+    ]
+}
