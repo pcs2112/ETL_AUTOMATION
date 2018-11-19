@@ -1,0 +1,31 @@
+{
+    "SOURCE_SERVER": "[ENTER_HERE]",
+    "SOURCE_DATABASE": "[ENTER_HERE]",
+    "SOURCE_SCHEMA": "[ENTER_HERE]",
+    "SOURCE_TABLE": "[ENTER_HERE]",
+    "SOURCE_DATA_MART": "[ENTER_HERE]",
+    "SOURCE_TABLE_SEARCH_COLUMN": {
+        "column_name": "[ENTER_HERE]",
+        "is_utc": true
+    },
+    "SOURCE_TABLE_SEARCH_CONDITION": "[ENTER_HERE]",
+    "TARGET_SERVER": "[ENTER_HERE]",
+    "TARGET_DATABASE": "[ENTER_HERE]",
+    "TARGET_SCHEMA": "[ENTER_HERE]",
+    "TARGET_TABLE": "[ENTER_HERE]",
+    "TARGET_TABLE_KEY_COLUMNS": [],
+    "TARGET_TABLE_EXTRA_COLUMNS": [
+        {
+            "column_name": "[ENTER_HERE]",
+            "data_type": "[ENTER_HERE]",
+            "value": "[ENTER_HERE]"
+        }
+    ],
+    "DATA_PARTITION": "[ENTER_HERE]",
+    "DATA_PARTITION_COLUMN": "[ENTER_HERE]",
+    "STORED_PROCEDURE_NAME": "[ENTER_HERE]",
+    "UPDATE_MATCH_CHECK_COLUMNS": [
+        "UPDATE_DTTM",
+        "INSERT_DTTM"
+    ]
+}
