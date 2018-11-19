@@ -16,11 +16,27 @@ def create_stored_procedure(preference_filename=''):
         print(str(e))
         return
 
+    # Init DB connection using the preference file
+    if pref_config['SOURCE_SERVER'] == 'localhost':
+        db_config = get_config()
+    else:
+        db_config = {
+            'DB_SERVER': pref_config['SOURCE_SERVER'],
+            'DB_NAME': pref_config['SOURCE_DATABASE'],
+            'DB_USER': '',
+            'DB_PASSWORD': '',
+            'DB_DRIVER': '',
+            'DB_TRUSTED_CONNECTION': 1
+        }
+
+    init_db(db_config)
+
     create_table_filename = code_generation.create_table(pref_config)
     create_stored_procedure_filename = code_generation.create_stored_procedure(pref_config)
     print('Please locate your DDL files at:')
-    print(f"create table DDL -> {create_table_filename}")
-    print(f"create stored procedure DDL -> {create_stored_procedure_filename}")
+    print(f"Create table DDL -> {create_table_filename}")
+    print(f"Create stored procedure DDL -> {create_stored_procedure_filename}")
+    close()
 
 
 arg_count = len(sys.argv)
@@ -34,13 +50,7 @@ except KeyError as e:
     print(f"\"{sys.argv[1]}\" is an invalid command.")
     exit()
 
-# Init DB
-init_db(get_config())
-
 if len(sys.argv) > 2:
     cmd(*sys.argv[2:len(sys.argv)])
 else:
     cmd()
-
-# Close DB
-close()
