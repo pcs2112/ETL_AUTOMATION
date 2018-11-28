@@ -32,8 +32,8 @@ def create_table(config):
     if identity_column:
         key_columns = [f"{identity_column['column_name']} ASC"]
 
-    if len(config['TARGET_TABLE_KEY_COLUMNS']) > 0:
-        key_columns = key_columns + config['TARGET_TABLE_KEY_COLUMNS']
+    if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
+        key_columns = key_columns + config['TARGET_TABLE_EXTRA_KEY_COLUMNS']
 
     key_columns_sql = ",\n".join([str(key_column) for key_column in key_columns])
     sql = sql.replace('<TARGET_TABLE_KEY_COLUMNS>', key_columns_sql)

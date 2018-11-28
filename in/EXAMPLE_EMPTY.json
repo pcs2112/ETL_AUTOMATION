@@ -1,31 +1,33 @@
 {
-    "SOURCE_SERVER": "[ENTER_HERE]",
-    "SOURCE_DATABASE": "[ENTER_HERE]",
-    "SOURCE_SCHEMA": "[ENTER_HERE]",
-    "SOURCE_TABLE": "[ENTER_HERE]",
-    "SOURCE_DATA_MART": "[ENTER_HERE]",
+    "SOURCE_SERVER": "|ENTER|",
+    "SOURCE_DATABASE": "|ENTER|",
+    "SOURCE_SCHEMA": "|ENTER|",
+    "SOURCE_TABLE": "|ENTER|",
+    "SOURCE_DATA_MART": "|ENTER|",
     "SOURCE_TABLE_SEARCH_COLUMN": {
-        "column_name": "[ENTER_HERE]",
+        "column_name": "|ENTER|",
         "is_utc": true
     },
-    "SOURCE_TABLE_SEARCH_CONDITION": "[ENTER_HERE]",
-    "TARGET_SERVER": "[ENTER_HERE]",
-    "TARGET_DATABASE": "[ENTER_HERE]",
-    "TARGET_SCHEMA": "[ENTER_HERE]",
-    "TARGET_TABLE": "[ENTER_HERE]",
-    "TARGET_TABLE_KEY_COLUMNS": [],
+    "SOURCE_TABLE_SEARCH_CONDITION": "|ENTER|",
+    "TARGET_SERVER": "|ENTER|",
+    "TARGET_DATABASE": "|ENTER|",
+    "TARGET_SCHEMA": "|ENTER|",
+    "TARGET_TABLE": "|ENTER|",
+    "TARGET_TABLE_EXTRA_KEY_COLUMNS": [],
     "TARGET_TABLE_EXTRA_COLUMNS": [
         {
-            "column_name": "[ENTER_HERE]",
-            "data_type": "[ENTER_HERE]",
-            "value": "[ENTER_HERE]"
+            "column_name": "|ENTER|",
+            "data_type": "|ENTER|",
+            "value": "|ENTER|"
         }
     ],
-    "DATA_PARTITION": "[ENTER_HERE]",
-    "DATA_PARTITION_COLUMN": "[ENTER_HERE]",
-    "STORED_PROCEDURE_NAME": "[ENTER_HERE]",
+    "DATA_PARTITION_FUNCTION": "|ENTER|",
+    "DATA_PARTITION_COLUMN": "|ENTER|",
+    "INDEX_PARTITION_FUNCTION": "|ENTER|",
+    "INDEX_PARTITION_COLUMN": "|ENTER|",
+    "STORED_PROCEDURE_NAME": "|ENTER|",
     "UPDATE_MATCH_CHECK_COLUMNS": [
-        "UPDATE_DTTM",
-        "INSERT_DTTM"
+        '|ENTER|',
+        '|ENTER|'
     ]
 }
