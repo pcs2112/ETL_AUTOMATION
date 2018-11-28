@@ -25,17 +25,17 @@ def create_stored_procedure(preference_filename=''):
             'DB_NAME': pref_config['SOURCE_DATABASE'],
             'DB_USER': '',
             'DB_PASSWORD': '',
-            'DB_DRIVER': '',
+            'DB_DRIVER': 'SQL Server',
             'DB_TRUSTED_CONNECTION': 1
         }
 
     init_db(db_config)
 
     create_table_filename = code_generation.create_table(pref_config)
-    create_stored_procedure_filename = code_generation.create_stored_procedure(pref_config)
+    create_sp_filename = code_generation.create_sp(pref_config)
     print('Please locate your DDL files at:')
     print(f"Create table DDL -> {create_table_filename}")
-    print(f"Create stored procedure DDL -> {create_stored_procedure_filename}")
+    print(f"Create stored procedure DDL -> {create_sp_filename}")
     close()
 
 

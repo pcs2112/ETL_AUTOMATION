@@ -24,7 +24,7 @@ def create_table(config):
         columns.append(f"{column['column_name']} {column['data_type']}\n")
 
     columns_sql = ",\n".join([str(column) for column in columns])
-    sql = base_sql.replace('<TARGET_TABLE_COLUMNS>', columns_sql)
+    sql = base_sql.replace('<TARGET_TABLE_COLUMNS>', columns_sql + ",\n")
 
     # Set the key columns
     key_columns = []
@@ -42,11 +42,19 @@ def create_table(config):
     sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
     sql = sql.replace('<TARGET_TABLE>', config['TARGET_TABLE'])
 
-    # Set the partition name
+    # Set the data partition name
     if config['DATA_PARTITION_COLUMN'] == '':
-        sql = sql.replace('<PARTITION_NAME>', f"[{config['DATA_PARTITION']}]")
+        sql = sql.replace('<PARTITION_NAME>', f"[{config['DATA_PARTITION_FUNCTION']}]")
     else:
-        sql = sql.replace('<PARTITION_NAME>', f"{config['DATA_PARTITION']}({config['DATA_PARTITION_COLUMN']})")
+        sql = sql.replace('<PARTITION_NAME>', f"{config['DATA_PARTITION_FUNCTION']}({config['DATA_PARTITION_COLUMN']})")
+
+    # Set the index partition name
+    if config['INDEX_PARTITION_COLUMN'] == '':
+        sql = sql.replace('<INDEX_PARTITION_NAME>', f"[{config['INDEX_PARTITION_FUNCTION']}]")
+    else:
+        sql = sql.replace(
+            '<INDEX_PARTITION_NAME>', f"{config['INDEX_PARTITION_FUNCTION']}({config['INDEX_PARTITION_COLUMN']})"
+        )
 
     # Create the file and return its path
     return create_sql_file(f"{config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}_{out_file_name_postfix}", sql)

@@ -29,7 +29,11 @@ def set_numeric(column, parts):
 def get_table_definition(table_definition):
     module = sys.modules[__name__]
     columns = []
+
     for column in table_definition:
+        if column['column_name'] == 'timestamp':
+            continue
+
         parts = [column['column_name']]
 
         try:

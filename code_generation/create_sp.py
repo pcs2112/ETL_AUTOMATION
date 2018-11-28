@@ -1,7 +1,7 @@
 from mssql_functions import get_table_definition_from_source, get_base_sql_code, create_sql_file
 from .utils import get_table_definition, get_identity_column, get_column_names
 
-base_sql_file_name = 'create_stored_procedure.sql'
+base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'CREATE_SP.sql'
 
 
@@ -63,7 +63,7 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
     return " or \n".join([str(condition) for condition in conditions])
 
 
-def create_stored_procedure(config):
+def create_sp(config):
     # Get the table definition from the specified config
     table_definition = get_table_definition_from_source(
         config['SOURCE_DATABASE'],
@@ -78,8 +78,10 @@ def create_stored_procedure(config):
 
     # Set UTC sections
     if get_is_utc(table_definition, config['SOURCE_TABLE_SEARCH_COLUMN']):
-        sql = sql.replace('<UTC_SECTION>', get_base_sql_code('create_stored_procedure_utc_section.sql'))
+        sql = sql.replace('<UTC_SECTION>', get_base_sql_code('create_sp_utc_section.sql'))
         period_start_prefix = 'S'
+    else:
+        sql = sql.replace('<UTC_SECTION>', '')
 
     # Set placeholder values
     sql = sql.replace('<PERIOD_START_PREFIX>', period_start_prefix)
@@ -129,9 +131,13 @@ def create_stored_procedure(config):
     sql = sql.replace('<SOURCE_TABLE_SEARCH_CONDITION>', config['SOURCE_TABLE_SEARCH_CONDITION'])
 
     # Set the match check columns
-    sql = sql.replace('<UPDATE_MATCH_CHECK_COLUMNS>', get_update_match_check_columns_sql(
-        table_definition, config['UPDATE_MATCH_CHECK_COLUMNS']
-    ))
+    if len(config['UPDATE_MATCH_CHECK_COLUMNS']) > 0:
+        sql = sql.replace('<MATCH_SECTION>', get_base_sql_code('create_sp_match_section.sql'))
+        sql = sql.replace('<UPDATE_MATCH_CHECK_COLUMNS>', get_update_match_check_columns_sql(
+            table_definition, config['UPDATE_MATCH_CHECK_COLUMNS']
+        ))
+    else:
+        sql = sql.replace('<MATCH_SECTION>', get_base_sql_code('create_sp_match_section_empty.sql'))
 
     # Create the file and return its path
     return create_sql_file(f"{config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}_{out_file_name_postfix}", sql)
