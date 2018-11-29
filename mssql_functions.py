@@ -17,7 +17,7 @@ def get_table_definition_from_source(db_name, table_name, server_name=''):
            "P.max_length AS SIZE, CAST(P.precision AS VARCHAR) + '/' + CAST(P.scale AS VARCHAR) AS PRECISION_SCALE, "
            "c.* FROM {0}[{1}].sys.objects AS T JOIN {0}[{1}].sys.columns AS C ON T.object_id = C.object_id "
            "JOIN {0}[{1}].sys.types AS P ON C.system_type_id = P.system_type_id WHERE  T.type_desc = 'USER_TABLE' "
-           "and T.name = ? order by column_id asc").format(server_name, db_name, table_name)
+           "and T.name = ? and P.name != 'timestamp' order by column_id asc").format(server_name, db_name, table_name)
 
     columns = fetch_rows(sql, [table_name])
 
