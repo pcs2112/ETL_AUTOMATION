@@ -31,7 +31,7 @@ def get_table_definition(table_definition):
     columns = []
 
     for column in table_definition:
-        if column['column_name'] == 'timestamp':
+        if column['data_type'] == 'timestamp':
             continue
 
         parts = [column['column_name']]
