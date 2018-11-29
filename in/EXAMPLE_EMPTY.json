@@ -29,5 +29,9 @@
     "UPDATE_MATCH_CHECK_COLUMNS": [
         '|ENTER|',
         '|ENTER|'
-    ]
+    ],
+    "MIN_CALL_DURATION_MINUTES": "|ENTER|",
+    "MAX_CALL_DURATION_MINUTES": "|ENTER|",
+    "ETL_PRIORITY": "|ENTER|",
+    "SOURCE_TYPE": "|ENTER|"
 }

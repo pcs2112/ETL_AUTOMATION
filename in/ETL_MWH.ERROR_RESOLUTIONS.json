@@ -21,11 +21,15 @@
             "value": "S_LION.Get_LionPropertyValue_ID(source.PropertyDefinitionId, source.EntityTypeId, source.NewValue)"
         }
     ],
-    "DATA_PARTITION_FUNCTION": "PRIMARY",
-    "DATA_PARTITION_COLUMN": "",
-    "INDEX_PARTITION_FUNCTION": "PRIMARY",
+    "DATA_PARTITION_FUNCTION": "PRIMARY1",
+    "DATA_PARTITION_COLUMN": "ID",
+    "INDEX_PARTITION_FUNCTION": "PRIMARY1",
     "INDEX_PARTITION_COLUMN": "",
     "STORED_PROCEDURE_NAME": "MERGE_<TARGET_TABLE>",
     "UPDATE_MATCH_CHECK_COLUMNS": [
-    ]
+    ],
+    "MIN_CALL_DURATION_MINUTES": 15,
+    "MAX_CALL_DURATION_MINUTES": 1440,
+    "ETL_PRIORITY": 1,
+    "SOURCE_TYPE": "REPLICA"
 }

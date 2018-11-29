@@ -35,7 +35,10 @@ def create_table(config):
     if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
         key_columns = key_columns + config['TARGET_TABLE_EXTRA_KEY_COLUMNS']
 
-    key_columns_sql = "\n".join(["\t\t" + str(key_column) for key_column in key_columns])
+    if config['DATA_PARTITION_COLUMN'] != '':
+        key_columns.append(f"{config['DATA_PARTITION_COLUMN']} DESC")
+
+    key_columns_sql = ",\n".join(["\t\t" + str(key_column) for key_column in key_columns])
     sql = sql.replace('<TARGET_TABLE_KEY_COLUMNS>', key_columns_sql)
 
     # Set the target schema and target table
