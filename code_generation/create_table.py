@@ -21,9 +21,9 @@ def create_table(config):
     # Set the columns
     columns = get_table_definition(table_definition)
     for column in config['TARGET_TABLE_EXTRA_COLUMNS']:
-        columns.append(f"{column['column_name']} {column['data_type']}\n")
+        columns.append(f"{column['column_name']} {column['data_type']}")
 
-    columns_sql = ",\n".join([str(column) for column in columns])
+    columns_sql = ",\n".join(["\t\t" + str(column) for column in columns])
     sql = base_sql.replace('<TARGET_TABLE_COLUMNS>', columns_sql + ",\n")
 
     # Set the key columns
@@ -35,7 +35,7 @@ def create_table(config):
     if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
         key_columns = key_columns + config['TARGET_TABLE_EXTRA_KEY_COLUMNS']
 
-    key_columns_sql = ",\n".join([str(key_column) for key_column in key_columns])
+    key_columns_sql = "\n".join(["\t\t\t\t" + str(key_column) for key_column in key_columns])
     sql = sql.replace('<TARGET_TABLE_KEY_COLUMNS>', key_columns_sql)
 
     # Set the target schema and target table
