@@ -93,11 +93,14 @@ def create_sp(config):
     sql = sql.replace('<SOURCE_TABLE>', config['SOURCE_TABLE'])
     sql = sql.replace('<SOURCE_DATA_MART>', config['SOURCE_DATA_MART'])
     sql = sql.replace('<SOURCE_TABLE_SEARCH_COLUMN>', config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'])
-
     sql = sql.replace('<TARGET_SERVER>', config['TARGET_SERVER'])
     sql = sql.replace('<TARGET_DATABASE>', config['TARGET_DATABASE'])
     sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
     sql = sql.replace('<TARGET_TABLE>', config['TARGET_TABLE'])
+    sql = sql.replace('<MIN_CALL_DURATION_MINUTES>', str(config['MIN_CALL_DURATION_MINUTES']))
+    sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
+    sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
+    sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
 
     # Set the source table definition columns
     source_table_column_definition = get_table_definition(table_definition)
@@ -106,7 +109,7 @@ def create_sp(config):
 
     # Set the source table column names
     source_table_column_names = get_column_names(table_definition)
-    source_table_column_names_sql = ",\n".join(["\t\t\t" + str(column) for column in source_table_column_names])
+    source_table_column_names_sql = ",\n".join(["\t\t" + str(column) for column in source_table_column_names])
     sql = sql.replace('<SOURCE_TABLE_COLUMN_NAMES>', source_table_column_names_sql)
 
     # Set the identity column
@@ -115,16 +118,16 @@ def create_sp(config):
 
     # Set the target table update columns and values
     target_table_update_values = get_update_values(table_definition, config['TARGET_TABLE_EXTRA_COLUMNS'])
-    target_table_update_values_sql = ",\n".join(["\t\t\t" + str(column) for column in target_table_update_values])
+    target_table_update_values_sql = ",\n".join(["\t\t" + str(column) for column in target_table_update_values])
     sql = sql.replace('<TARGET_TABLE_UPDATE_VALUES>', target_table_update_values_sql)
 
     # Set the target table insert columns and values
     target_table_insert_columns = get_insert_columns(table_definition, config['TARGET_TABLE_EXTRA_COLUMNS'])
-    target_table_insert_columns_sql = ",\n".join(["\t\t\t" + str(column) for column in target_table_insert_columns])
+    target_table_insert_columns_sql = ",\n".join(["\t\t" + str(column) for column in target_table_insert_columns])
     sql = sql.replace('<TARGET_TABLE_INSERT_COLUMNS>', target_table_insert_columns_sql)
 
     target_table_insert_values = get_insert_values(table_definition, config['TARGET_TABLE_EXTRA_COLUMNS'])
-    target_table_insert_values_sql = ",\n".join(["\t\t\t" + str(column) for column in target_table_insert_values])
+    target_table_insert_values_sql = ",\n".join(["\t\t" + str(column) for column in target_table_insert_values])
     sql = sql.replace('<TARGET_TABLE_INSERT_VALUES>', target_table_insert_values_sql)
 
     # Set the target table search condition
