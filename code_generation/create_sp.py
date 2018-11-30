@@ -1,5 +1,5 @@
 from mssql_functions import get_table_definition_from_source, get_base_sql_code, create_sql_file
-from .utils import get_table_definition, get_identity_column, get_column_names
+from .utils import get_table_definition, get_identity_column, get_column_names, get_current_timestamp
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'CREATE_SP.sql'
@@ -101,6 +101,7 @@ def create_sp(config):
     sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
     sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
     sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
+    sql = sql.replace('<DATE_CREATED>', get_current_timestamp())
 
     # Set the source table definition columns
     source_table_column_definition = get_table_definition(table_definition)
