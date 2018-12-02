@@ -1,5 +1,6 @@
 import os
 import json
+from config import get_config
 from mssql_connection import fetch_rows
 
 
@@ -43,7 +44,7 @@ def get_configuration_file_path(file_name):
 	:param str file_name:
 	:return: str
 	"""
-	file_path = os.path.join(os.path.dirname(__file__), 'in', file_name)
+	file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], file_name)
 	if os.path.exists(file_path) is False:
 		raise FileExistsError(f"{file_name} is an invalid file.")
 
@@ -79,7 +80,7 @@ def get_base_sql_code(file_name):
 	:param str file_name:
 	:return: str
 	"""
-	file_path = os.path.join(os.path.dirname(__file__), 'code_generation/in', file_name)
+	file_path = os.path.join(get_config()['CODE_GENERATION_IN_DIR'], file_name)
 	with open(file_path) as fp:
 		contents = fp.read()
 
@@ -93,7 +94,7 @@ def create_sql_file(file_name, sql_contents):
 	:param str sql_contents: The file's SQL contents
 	:return: str New file path
 	"""
-	file_path = os.path.join(os.path.dirname(__file__), 'out', file_name)
+	file_path = os.path.join(get_config()['CODE_GENERATION_OUT_DIR'], file_name)
 	with open(file_path, "w+") as fp:
 		fp.write(sql_contents)
 
@@ -107,7 +108,7 @@ def create_preference_file(file_name, contents):
 	:param str contents: The file's contents
 	:return: str New file path
 	"""
-	file_path = os.path.join(os.path.dirname(__file__), 'in', file_name)
+	file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], file_name)
 	with open(file_path, "w+") as fp:
 		fp.write(contents)
 
