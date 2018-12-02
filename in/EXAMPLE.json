@@ -21,10 +21,10 @@
             "value": "S_LION.Get_LionPropertyValue_ID(source.PropertyDefinitionId, source.EntityTypeId, source.NewValue)"
         }
     ],
-    "DATA_PARTITION": "PRIMARY",
+    "DATA_PARTITION_FUNCTION": "PRIMARY",
     "DATA_PARTITION_COLUMN": "",
-    "INDEX_DATA_PARTITION": "PRIMARY",
-    "INDEX_DATA_PARTITION_COLUMN": "",
+    "INDEX_PARTITION_FUNCTION": "PRIMARY",
+    "INDEX_PARTITION_COLUMN": "",
     "STORED_PROCEDURE_NAME": "MERGE_<TARGET_TABLE>",
     "UPDATE_MATCH_CHECK_COLUMNS": [
         "UPDATE_DTTM",
