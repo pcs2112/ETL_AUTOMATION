@@ -3,6 +3,7 @@ import code_generation
 from config import get_config
 from mssql_connection import init_db, close
 from utils import get_configuration_from_preference_file
+from preference_file_loader import create_preference_files
 
 
 def create_stored_procedure(preference_filename=''):
@@ -37,6 +38,13 @@ def create_stored_procedure(preference_filename=''):
 	print(f"Create table DDL -> {create_table_filename}")
 	print(f"Create stored procedure DDL -> {create_sp_filename}")
 	close()
+
+
+def bulk_create_preference_files(file_name):
+	files = create_preference_files(file_name)
+	print('The following files were created:')
+	for file in files:
+		print(file)
 
 
 arg_count = len(sys.argv)
