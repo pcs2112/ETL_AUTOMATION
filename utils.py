@@ -37,15 +37,26 @@ def get_table_definition_from_source(db_name, table_name, server_name=''):
 	return columns
 
 
-def get_configuration_file(file_name):
+def get_configuration_file_path(file_name):
 	"""
-	Returns the data for the specified configuration file.
+	Returns the path for the specified configuration file.
 	:param str file_name:
 	:return: str
 	"""
 	file_path = os.path.join(os.path.dirname(__file__), 'in', file_name)
 	if os.path.exists(file_path) is False:
 		raise FileExistsError(f"{file_name} is an invalid file.")
+
+	return file_path
+
+
+def get_configuration_file(file_name):
+	"""
+	Returns the data for the specified configuration file.
+	:param str file_name:
+	:return: str
+	"""
+	file_path = get_configuration_file_path(file_name)
 
 	with open(file_path) as fp:
 		contents = fp.read()
@@ -85,5 +96,19 @@ def create_sql_file(file_name, sql_contents):
 	file_path = os.path.join(os.path.dirname(__file__), 'out', file_name)
 	with open(file_path, "w+") as fp:
 		fp.write(sql_contents)
+
+	return file_path
+
+
+def create_preference_file(file_name, contents):
+	"""
+	Writes and creates a preference file.
+	:param str file_name: File name
+	:param str contents: The file's contents
+	:return: str New file path
+	"""
+	file_path = os.path.join(os.path.dirname(__file__), 'in', file_name)
+	with open(file_path, "w+") as fp:
+		fp.write(contents)
 
 	return file_path
