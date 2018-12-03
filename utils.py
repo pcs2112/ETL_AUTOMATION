@@ -94,7 +94,7 @@ def create_sql_file(file_name, sql_contents):
 	:param str sql_contents: The file's SQL contents
 	:return: str New file path
 	"""
-	file_path = os.path.join(get_config()['CODE_GENERATION_OUT_DIR'], file_name)
+	file_path = os.path.join(get_config()['ETL_CONFIG_OUT_DIR'], file_name)
 	with open(file_path, "w+") as fp:
 		fp.write(sql_contents)
 

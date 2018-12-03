@@ -14,7 +14,6 @@ ETL_CONFIG_OUT_DIR = os.path.join(ROOT_DIR, 'out')
 
 # Code generation dirs
 CODE_GENERATION_IN_DIR = os.path.join(ROOT_DIR, 'code_generation/in')
-CODE_GENERATION_OUT_DIR = os.path.join(ROOT_DIR, 'code_generation/out')
 
 # Set the settings
 config = {
@@ -27,8 +26,7 @@ config = {
 	'ROOT_DIR': ROOT_DIR,
 	'ETL_CONFIG_IN_DIR': ETL_CONFIG_IN_DIR,
 	'ETL_CONFIG_OUT_DIR': ETL_CONFIG_OUT_DIR,
-	'CODE_GENERATION_IN_DIR': CODE_GENERATION_IN_DIR,
-	'CODE_GENERATION_OUT_DIR': CODE_GENERATION_OUT_DIR
+	'CODE_GENERATION_IN_DIR': CODE_GENERATION_IN_DIR
 }
 
 
