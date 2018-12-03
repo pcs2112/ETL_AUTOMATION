@@ -1,6 +1,6 @@
 import xlrd
 import json
-from utils import get_configuration_file_path, create_preference_file
+from utils import get_configuration_file_path, create_preference_file, split_string
 
 
 def get_workbook(file_name):
@@ -53,7 +53,23 @@ def create_preference_files(file_name):
 
 	for i in range(len(data)):
 		obj = data[i]
+
+		# Get the stored procedure name
 		sp_name = obj['STORED_PROCEDURE_NAME'].replace('<TARGET_TABLE>', obj['TARGET_TABLE'])
+
+		# Get the target table extra columns
+		target_table_extra_cols_list = split_string(obj['TARGET_TABLE_EXTRA_COLUMNS'], '|')
+		target_table_extra_cols = []
+
+		for col in target_table_extra_cols_list:
+			props = split_string(col, ';')
+			if len(props) > 0:
+				target_table_extra_cols.append({
+					'column_name': props[0],
+					'data_type': props[1],
+					'value': props[2]
+				})
+
 		config = {
 			'SOURCE_SERVER': obj['SOURCE_SERVER'],
 			'SOURCE_DATABASE': obj['SOURCE_DATABASE'],
@@ -69,13 +85,14 @@ def create_preference_files(file_name):
 			'TARGET_DATABASE': obj['TARGET_DATABASE'],
 			'TARGET_SCHEMA': obj['TARGET_SCHEMA'],
 			'TARGET_TABLE': obj['TARGET_TABLE'],
-			'TARGET_TABLE_EXTRA_KEY_COLUMNS': [col.strip() for col in obj['TARGET_TABLE_EXTRA_KEY_COLUMNS'].split(',')],
+			'TARGET_TABLE_EXTRA_KEY_COLUMNS': split_string(obj['TARGET_TABLE_EXTRA_KEY_COLUMNS']),
+			'TARGET_TABLE_EXTRA_COLUMNS': target_table_extra_cols,
 			'DATA_PARTITION_FUNCTION': obj['DATA_PARTITION_FUNCTION'],
 			'DATA_PARTITION_COLUMN': obj['DATA_PARTITION_COLUMN'],
 			'INDEX_PARTITION_FUNCTION': obj['INDEX_PARTITION_FUNCTION'],
 			'INDEX_PARTITION_COLUMN': obj['INDEX_PARTITION_COLUMN'],
 			'STORED_PROCEDURE_NAME': sp_name,
-			'UPDATE_MATCH_CHECK_COLUMNS': [col.strip() for col in obj['UPDATE_MATCH_CHECK_COLUMNS'].split(',')],
+			'UPDATE_MATCH_CHECK_COLUMNS': split_string(obj['UPDATE_MATCH_CHECK_COLUMNS']),
 			'MIN_CALL_DURATION_MINUTES': int(obj['MIN_CALL_DURATION_MINUTES']),
 			'MAX_CALL_DURATION_MINUTES': int(obj['MAX_CALL_DURATION_MINUTES']),
 			'ETL_PRIORITY': int(obj['ETL_PRIORITY']),

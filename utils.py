@@ -113,3 +113,16 @@ def create_preference_file(file_name, contents):
 		fp.write(contents)
 
 	return file_path
+
+
+def split_string(value, delimiter=','):
+	""" Splits the specified string and returns an array containing each part. """
+	tmp_parts = value.split(delimiter)
+	parts = []
+	if len(tmp_parts) > 0:
+		for tmp_part in tmp_parts:
+			tmp_part = tmp_part.strip()
+			if tmp_part != '':
+				parts.append(tmp_part)
+
+	return parts
