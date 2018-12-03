@@ -9,6 +9,7 @@
         "is_utc": true
     },
     "SOURCE_TABLE_SEARCH_CONDITION": "|ENTER|",
+    "SOURCE_TABLE_PRIMARY_KEY": "|ENTER|",
     "TARGET_SERVER": "|ENTER|",
     "TARGET_DATABASE": "|ENTER|",
     "TARGET_SCHEMA": "|ENTER|",

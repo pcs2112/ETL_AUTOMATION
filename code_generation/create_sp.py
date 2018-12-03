@@ -115,8 +115,11 @@ def create_sp(config):
 	sql = sql.replace('<SOURCE_TABLE_COLUMN_NAMES>', source_table_column_names_sql)
 
 	# Set the identity column
-	identity_column = get_identity_column(table_definition)
-	sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', identity_column['column_name'])
+	if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
+		sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', config['SOURCE_TABLE_PRIMARY_KEY'])
+	else:
+		identity_column = get_identity_column(table_definition)
+		sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', identity_column['column_name'])
 
 	# Set the target table update columns and values
 	target_table_update_values = get_update_values(table_definition, config['TARGET_TABLE_EXTRA_COLUMNS'])

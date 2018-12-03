@@ -26,9 +26,12 @@ def create_table(config):
 
 	# Set the key columns
 	key_columns = []
-	identity_column = get_identity_column(table_definition)
-	if identity_column:
-		key_columns = [f"{identity_column['column_name']} ASC"]
+	if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
+		key_columns = [f"{config['SOURCE_TABLE_PRIMARY_KEY']} ASC"]
+	else:
+		identity_column = get_identity_column(table_definition)
+		if identity_column:
+			key_columns = [f"{identity_column['column_name']} ASC"]
 
 	if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
 		key_columns = key_columns + config['TARGET_TABLE_EXTRA_KEY_COLUMNS']
