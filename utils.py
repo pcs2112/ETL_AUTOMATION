@@ -163,7 +163,7 @@ def validate_preference_file(table_definition, config):
 			raise ValueError(f"{int_arg} must be an integer.")
 
 	for arr_arg in arr_args:
-		if arr_arg not in config or not isinstance(config[arr_arg], int):
+		if arr_arg not in config or not isinstance(config[arr_arg], list):
 			raise ValueError(f"{arr_arg} must be an array.")
 
 	search_column_name = config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
