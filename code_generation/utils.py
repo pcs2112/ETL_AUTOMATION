@@ -32,8 +32,8 @@ def get_table_definition(table_definition):
 	module = sys.modules[__name__]
 	columns = []
 
-	for column in table_definition:
-		parts = [column['column_name']]
+	for key, column in table_definition.items():
+		parts = [key]
 
 		try:
 			func = getattr(module, 'set_' + column['data_type'])
@@ -49,14 +49,14 @@ def get_table_definition(table_definition):
 
 def get_column_names(table_definition):
 	columns = []
-	for column in table_definition:
-		columns.append(column['column_name'])
+	for key, column in table_definition.items():
+		columns.append(key)
 
 	return columns
 
 
 def get_identity_column(table_definition):
-	for column in table_definition:
+	for key, column in table_definition.items():
 		if column['is_identity'] == 1:
 			return column
 
@@ -66,3 +66,15 @@ def get_identity_column(table_definition):
 def get_current_timestamp(format_str="%Y-%m-%d %H:%M"):
 	now = datetime.datetime.now()
 	return now.strftime(format_str)
+
+
+def get_target_table_name(source_table_name, target_table_name):
+	return target_table_name.replace('<SOURCE_TABLE>', source_table_name)
+
+
+def get_sp_name(target_table_name, sp_name):
+	return sp_name.replace('<TARGET_TABLE>', target_table_name)
+
+
+def get_column_exists(table_definition, column_name):
+	return column_name.upper() in table_definition

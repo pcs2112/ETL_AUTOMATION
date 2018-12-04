@@ -1,18 +1,11 @@
-from utils import get_table_definition_from_source, get_base_sql_code, create_sql_file
-from .utils import get_table_definition, get_identity_column, get_current_timestamp
+from utils import get_base_sql_code, create_sql_file
+from .utils import get_table_definition, get_identity_column, get_current_timestamp, get_target_table_name
 
 base_sql_file_name = 'create_table.sql'
 out_file_name_postfix = 'CREATE_TABLE.sql'
 
 
-def create_table(config):
-	# Get the table definition from the specified config
-	table_definition = get_table_definition_from_source(
-		config['SOURCE_DATABASE'],
-		config['SOURCE_TABLE'],
-		'' if config['SOURCE_SERVER'] == 'localhost' else config['SOURCE_SERVER']
-	)
-
+def create_table(config, table_definition):
 	# Get the base sql for creating a table
 	base_sql = get_base_sql_code(base_sql_file_name)
 
@@ -44,7 +37,7 @@ def create_table(config):
 
 	# Set the target schema and target table
 	sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
-	sql = sql.replace('<TARGET_TABLE>', config['TARGET_TABLE'])
+	sql = sql.replace('<TARGET_TABLE>', get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE']))
 
 	# Set the date
 	sql = sql.replace('<DATE_CREATED>', get_current_timestamp())

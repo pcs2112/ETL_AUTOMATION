@@ -1,6 +1,7 @@
 import xlrd
 import json
 from utils import get_configuration_file_path, create_preference_file, split_string
+from code_generation.utils import get_sp_name, get_target_table_name
 
 
 def get_workbook(file_name):
@@ -54,8 +55,11 @@ def create_preference_files(file_name):
 	for i in range(len(data)):
 		obj = data[i]
 
+		# Get the target table name
+		target_table = get_target_table_name(obj['SOURCE_TABLE'], obj['TARGET_TABLE'])
+
 		# Get the stored procedure name
-		sp_name = obj['STORED_PROCEDURE_NAME'].replace('<TARGET_TABLE>', obj['TARGET_TABLE'])
+		sp_name = get_sp_name(target_table, obj['STORED_PROCEDURE_NAME'])
 
 		# Get the target table extra columns
 		target_table_extra_cols_list = split_string(obj['TARGET_TABLE_EXTRA_COLUMNS'], '|')
@@ -85,7 +89,7 @@ def create_preference_files(file_name):
 			'TARGET_SERVER': obj['TARGET_SERVER'],
 			'TARGET_DATABASE': obj['TARGET_DATABASE'],
 			'TARGET_SCHEMA': obj['TARGET_SCHEMA'],
-			'TARGET_TABLE': obj['TARGET_TABLE'],
+			'TARGET_TABLE': target_table,
 			'TARGET_TABLE_EXTRA_KEY_COLUMNS': split_string(obj['TARGET_TABLE_EXTRA_KEY_COLUMNS'], '|'),
 			'TARGET_TABLE_EXTRA_COLUMNS': target_table_extra_cols,
 			'DATA_PARTITION_FUNCTION': obj['DATA_PARTITION_FUNCTION'],

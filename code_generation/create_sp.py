@@ -1,5 +1,6 @@
-from utils import get_table_definition_from_source, get_base_sql_code, create_sql_file
-from .utils import get_table_definition, get_identity_column, get_column_names, get_current_timestamp
+from utils import get_base_sql_code, create_sql_file
+from .utils import (get_table_definition, get_identity_column, get_column_names, get_current_timestamp,
+					get_target_table_name, get_sp_name)
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'CREATE_SP.sql'
@@ -7,7 +8,7 @@ out_file_name_postfix = 'CREATE_SP.sql'
 
 def get_insert_columns(table_definition, extra_columns):
 	insert_columns = []
-	for column in table_definition:
+	for key, column in table_definition.items():
 		insert_columns.append(f"{column['column_name']}")
 
 	for column in extra_columns:
@@ -18,7 +19,7 @@ def get_insert_columns(table_definition, extra_columns):
 
 def get_update_values(table_definition, extra_columns):
 	update_values = []
-	for column in table_definition:
+	for key, column in table_definition.items():
 		update_values.append(f"{column['column_name']} = source.{column['column_name']}")
 
 	for column in extra_columns:
@@ -29,7 +30,7 @@ def get_update_values(table_definition, extra_columns):
 
 def get_insert_values(table_definition, extra_columns):
 	insert_values = []
-	for column in table_definition:
+	for key, column in table_definition.items():
 		insert_values.append(f"source.{column['column_name']}")
 
 	for column in extra_columns:
@@ -51,7 +52,7 @@ def get_is_utc(table_definition, search_column):
 
 def get_update_match_check_columns_sql(table_definition, match_check_columns):
 	conditions = []
-	for column in table_definition:
+	for key, column in table_definition.items():
 		if column['column_name'] in match_check_columns:
 			if column['is_nullable'] == 1:
 				conditions.append(
@@ -64,14 +65,7 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
 	return " or \n".join([str(condition) for condition in conditions])
 
 
-def create_sp(config):
-	# Get the table definition from the specified config
-	table_definition = get_table_definition_from_source(
-		config['SOURCE_DATABASE'],
-		config['SOURCE_TABLE'],
-		'' if config['SOURCE_SERVER'] == 'localhost' else config['SOURCE_SERVER']
-	)
-
+def create_sp(config, table_definition):
 	period_start_prefix = ''
 
 	# Get the base sql for creating a table
@@ -85,9 +79,10 @@ def create_sp(config):
 		sql = sql.replace('<UTC_SECTION>', '')
 
 	# Set placeholder values
+	target_table = get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
 	sql = sql.replace('<PERIOD_START_PREFIX>', period_start_prefix)
 	sql = sql.replace('<PERIOD_END_PREFIX>', period_start_prefix)
-	sql = sql.replace('<STORED_PROCEDURE_NAME>', config['STORED_PROCEDURE_NAME'])
+	sql = sql.replace('<STORED_PROCEDURE_NAME>', get_sp_name(target_table, config['STORED_PROCEDURE_NAME']))
 	sql = sql.replace('<SOURCE_SERVER>', config['SOURCE_SERVER'])
 	sql = sql.replace('<SOURCE_DATABASE>', config['SOURCE_DATABASE'])
 	sql = sql.replace('<SOURCE_SCHEMA>', config['SOURCE_SCHEMA'])
@@ -97,7 +92,7 @@ def create_sp(config):
 	sql = sql.replace('<TARGET_SERVER>', config['TARGET_SERVER'])
 	sql = sql.replace('<TARGET_DATABASE>', config['TARGET_DATABASE'])
 	sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
-	sql = sql.replace('<TARGET_TABLE>', config['TARGET_TABLE'])
+	sql = sql.replace('<TARGET_TABLE>', target_table)
 	sql = sql.replace('<MIN_CALL_DURATION_MINUTES>', str(config['MIN_CALL_DURATION_MINUTES']))
 	sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
 	sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))

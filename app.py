@@ -2,7 +2,7 @@ import sys
 import code_generation
 from config import get_config
 from mssql_connection import init_db, close
-from utils import get_configuration_from_preference_file
+from utils import get_configuration_from_preference_file, get_table_definition_from_source, validate_preference_file
 from preference_file_loader import create_preference_files
 
 
@@ -31,6 +31,21 @@ def create_stored_procedure(preference_filename=''):
 		}
 
 	init_db(db_config)
+
+	# Get the table definition from the specified config
+	table_definition = get_table_definition_from_source(
+		pref_config['SOURCE_DATABASE'],
+		pref_config['SOURCE_TABLE'],
+		'' if pref_config['SOURCE_SERVER'] == 'localhost' else pref_config['SOURCE_SERVER']
+	)
+
+	try:
+		validate_preference_file(table_definition, pref_config)
+	except ValueError as e:
+		print(f"Error on {preference_filename}:")
+		print(str(e))
+		close()
+		return
 
 	create_table_filename = code_generation.create_table(pref_config)
 	create_sp_filename = code_generation.create_sp(pref_config)
