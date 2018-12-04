@@ -47,8 +47,8 @@ def create_stored_procedure(preference_filename=''):
 		close()
 		return
 
-	create_table_filename = code_generation.create_table(pref_config)
-	create_sp_filename = code_generation.create_sp(pref_config)
+	create_table_filename = code_generation.create_table(pref_config, table_definition)
+	create_sp_filename = code_generation.create_sp(pref_config, table_definition)
 	print('Please locate your DDL files at:')
 	print(f"Create table DDL -> {create_table_filename}")
 	print(f"Create stored procedure DDL -> {create_sp_filename}")

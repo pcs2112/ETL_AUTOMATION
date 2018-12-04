@@ -166,10 +166,22 @@ def validate_preference_file(table_definition, config):
 		if arr_arg not in config or not isinstance(config[arr_arg], list):
 			raise ValueError(f"{arr_arg} must be an array.")
 
+	# Validate the search column
 	search_column_name = config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
-
 	if search_column_name != '' and not get_column_exists(table_definition, search_column_name):
-		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN = \"{search_column_name}\" is an invalid column.")
+		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
+
+	# Validate the update check columns
+	if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
+		for column_name in config['TARGET_TABLE_EXTRA_KEY_COLUMNS']:
+			if not get_column_exists(table_definition, column_name):
+				raise ValueError(f"TARGET_TABLE_EXTRA_KEY_COLUMNS: \"{column_name}\" is an invalid column.")
+
+	# Validate the update check columns
+	if len(config['UPDATE_MATCH_CHECK_COLUMNS']) > 0:
+		for column_name in config['UPDATE_MATCH_CHECK_COLUMNS']:
+			if not get_column_exists(table_definition, column_name):
+				raise ValueError(f"UPDATE_MATCH_CHECK_COLUMNS: \"{column_name}\" is an invalid column.")
 
 
 def split_string(value, delimiter=','):

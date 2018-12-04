@@ -43,7 +43,7 @@ def get_is_utc(table_definition, search_column):
 	if search_column['is_utc']:
 		return True
 
-	for column in table_definition:
+	for key, column in table_definition.items():
 		if column['column_name'] == search_column['column_name'] and 'utc' in column['column_name'].lower():
 			return True
 
