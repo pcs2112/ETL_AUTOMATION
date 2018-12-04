@@ -16,7 +16,8 @@ def set_datetime(column, parts):
 
 
 def set_varchar(column, parts):
-	parts.append(f"[{column['data_type']}] ({column['max_length']})")
+	max_length = 'max' if column['max_length'] < 1 else column['max_length']
+	parts.append(f"[{column['data_type']}] ({max_length})")
 
 
 def set_decimal(column, parts):
