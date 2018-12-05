@@ -2,8 +2,10 @@ import sys
 import code_generation
 from config import get_config
 from mssql_connection import init_db, close
-from utils import get_configuration_from_preference_file, get_table_definition_from_source, validate_preference_file
-from preference_file_loader import create_preference_files
+from utils import (
+	get_configuration_from_preference_file, get_table_definition_from_source, validate_preference_file,
+	create_preference_files
+)
 
 
 def create_stored_procedure(preference_filename=''):

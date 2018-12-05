@@ -1,6 +1,8 @@
 from utils import get_base_sql_code, create_sql_file
-from .utils import (get_table_definition, get_identity_column, get_column_names, get_current_timestamp,
-					get_target_table_name, get_sp_name)
+from .utils import (
+	get_table_definition, get_identity_column, get_column_names, get_current_timestamp, get_target_table_name,
+	get_sp_name
+)
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'CREATE_SP.sql'
