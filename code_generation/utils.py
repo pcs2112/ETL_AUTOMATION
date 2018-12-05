@@ -21,11 +21,11 @@ def set_varchar(column, parts):
 
 
 def set_decimal(column, parts):
-	parts.append(f"[{column['data_type']}] ({column['max_length']},{column['precision']})")
+	parts.append(f"[{column['data_type']}] ({column['precision']},{column['max_length']})")
 
 
 def set_numeric(column, parts):
-	parts.append(f"[{column['data_type']}] ({column['max_length']},{column['precision']})")
+	parts.append(f"[{column['data_type']}] ({column['precision']},{column['max_length']})")
 
 
 def get_table_definition(table_definition):
