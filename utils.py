@@ -2,7 +2,8 @@ import os
 import json
 from config import get_config
 from mssql_connection import fetch_rows
-from code_generation.utils import get_column_exists
+from code_generation.utils import get_column_exists, get_sp_name, get_target_table_name
+from excel_utils import get_workbook, get_workbook_data
 
 
 def get_table_definition_from_source(db_name, table_name, server_name=''):
@@ -182,6 +183,77 @@ def validate_preference_file(table_definition, config):
 		for column_name in config['UPDATE_MATCH_CHECK_COLUMNS']:
 			if not get_column_exists(table_definition, column_name):
 				raise ValueError(f"UPDATE_MATCH_CHECK_COLUMNS: \"{column_name}\" is an invalid column.")
+
+
+def create_preference_files(file_name):
+	"""
+	Creates the json preference files using the data in the
+	specified excel file.
+	:param str file_name:
+	:return list
+	"""
+	wb = get_workbook(get_configuration_file_path(file_name))
+	data = get_workbook_data(wb)
+	files = []
+
+	for i in range(len(data)):
+		obj = data[i]
+
+		# Get the target table name
+		target_table = get_target_table_name(obj['SOURCE_TABLE'], obj['TARGET_TABLE'])
+
+		# Get the stored procedure name
+		sp_name = get_sp_name(target_table, obj['STORED_PROCEDURE_NAME'])
+
+		# Get the target table extra columns
+		target_table_extra_cols_list = split_string(obj['TARGET_TABLE_EXTRA_COLUMNS'], '|')
+		target_table_extra_cols = []
+
+		for col in target_table_extra_cols_list:
+			props = split_string(col, ';')
+			if len(props) > 0:
+				target_table_extra_cols.append({
+					'column_name': props[0],
+					'data_type': props[1],
+					'value': props[2]
+				})
+
+		config = {
+			'SOURCE_SERVER': obj['SOURCE_SERVER'],
+			'SOURCE_DATABASE': obj['SOURCE_DATABASE'],
+			'SOURCE_SCHEMA': obj['SOURCE_SCHEMA'],
+			'SOURCE_TABLE': obj['SOURCE_TABLE'],
+			'SOURCE_DATA_MART': obj['SOURCE_DATA_MART'],
+			'SOURCE_TABLE_SEARCH_COLUMN': {
+				'column_name': obj['SOURCE_TABLE_SEARCH_COLUMN_NAME'],
+				'is_utc': obj['SOURCE_TABLE_SEARCH_COLUMN_IS_UTC'] == 'true'
+			},
+			'SOURCE_TABLE_SEARCH_CONDITION': obj['SOURCE_TABLE_SEARCH_CONDITION'],
+			'SOURCE_TABLE_PRIMARY_KEY': obj['SOURCE_TABLE_PRIMARY_KEY'],
+			'TARGET_SERVER': obj['TARGET_SERVER'],
+			'TARGET_DATABASE': obj['TARGET_DATABASE'],
+			'TARGET_SCHEMA': obj['TARGET_SCHEMA'],
+			'TARGET_TABLE': target_table,
+			'TARGET_TABLE_EXTRA_KEY_COLUMNS': split_string(obj['TARGET_TABLE_EXTRA_KEY_COLUMNS'], '|'),
+			'TARGET_TABLE_EXTRA_COLUMNS': target_table_extra_cols,
+			'DATA_PARTITION_FUNCTION': obj['DATA_PARTITION_FUNCTION'],
+			'DATA_PARTITION_COLUMN': obj['DATA_PARTITION_COLUMN'],
+			'INDEX_PARTITION_FUNCTION': obj['INDEX_PARTITION_FUNCTION'],
+			'INDEX_PARTITION_COLUMN': obj['INDEX_PARTITION_COLUMN'],
+			'STORED_PROCEDURE_NAME': sp_name,
+			'UPDATE_MATCH_CHECK_COLUMNS': split_string(obj['UPDATE_MATCH_CHECK_COLUMNS'], '|'),
+			'MIN_CALL_DURATION_MINUTES': int(obj['MIN_CALL_DURATION_MINUTES']),
+			'MAX_CALL_DURATION_MINUTES': int(obj['MAX_CALL_DURATION_MINUTES']),
+			'ETL_PRIORITY': int(obj['ETL_PRIORITY']),
+			'SOURCE_TYPE': obj['SOURCE_TYPE']
+		}
+
+		files.append(create_preference_file(
+			f"C8_{sp_name}.json",
+			json.dumps(config, indent=4)
+		))
+
+	return files
 
 
 def split_string(value, delimiter=','):

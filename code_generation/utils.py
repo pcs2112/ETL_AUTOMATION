@@ -15,17 +15,25 @@ def set_datetime(column, parts):
 	parts.append(f"[{column['data_type']}]")
 
 
+def set_char(column, parts):
+	return set_varchar(column, parts)
+	
+
 def set_varchar(column, parts):
 	max_length = 'max' if column['max_length'] < 1 else column['max_length']
 	parts.append(f"[{column['data_type']}] ({max_length})")
 
 
 def set_decimal(column, parts):
-	parts.append(f"[{column['data_type']}] ({column['max_length']},{column['precision']})")
+	return set_numeric(column, parts)
+
+
+def set_money(column, parts):
+	return set_numeric(column, parts)
 
 
 def set_numeric(column, parts):
-	parts.append(f"[{column['data_type']}] ({column['max_length']},{column['precision']})")
+	parts.append(f"[{column['data_type']}] ({column['precision']},{column['max_length']})")
 
 
 def get_table_definition(table_definition):
