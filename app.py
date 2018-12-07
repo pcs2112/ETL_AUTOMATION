@@ -38,7 +38,8 @@ def create_stored_procedure(preference_filename=''):
 	table_definition = get_table_definition_from_source(
 		pref_config['SOURCE_DATABASE'],
 		pref_config['SOURCE_TABLE'],
-		'' if pref_config['SOURCE_SERVER'] == 'localhost' else pref_config['SOURCE_SERVER']
+		'' if pref_config['SOURCE_SERVER'] == 'localhost' else pref_config['SOURCE_SERVER'],
+		pref_config['SOURCE_EXCLUDED_COLUMNS']
 	)
 
 	try:

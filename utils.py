@@ -6,12 +6,13 @@ from code_generation.utils import get_column_exists, get_sp_name, get_target_tab
 from excel_utils import get_workbook, get_workbook_data
 
 
-def get_table_definition_from_source(db_name, table_name, server_name=''):
+def get_table_definition_from_source(db_name, table_name, server_name='', excluded_columns=()):
 	"""
 	Returns the table definition.
 	:param str db_name: Database name
 	:param str table_name: Database table name
 	:param str server_name: Server name
+	:param list excluded_columns: Columns to exclude
 	:return list
 	"""
 	server_name = f'[{server_name}].' if server_name else ''
@@ -37,10 +38,15 @@ def get_table_definition_from_source(db_name, table_name, server_name=''):
 
 	for column in columns:
 		if column['column_name'].upper() in default_columns:
-			column['column_name'] = 'S_' + column['column_name']
-		
-		column['column_original_name'] = column['column_name']
+			column['source_table_column_name'] = 'S_' + column['column_name']
+		else:
+			column['source_table_column_name'] = column['column_name']
+			
 		out_columns[column['column_name'].upper()] = column
+	
+	if len(excluded_columns) > 0:
+		for excluded_column in excluded_columns:
+			out_columns.pop(excluded_column)
 
 	return out_columns
 
