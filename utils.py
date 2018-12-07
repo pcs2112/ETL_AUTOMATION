@@ -38,8 +38,8 @@ def get_table_definition_from_source(db_name, table_name, server_name=''):
 	for column in columns:
 		if column['column_name'].upper() in default_columns:
 			column['column_name'] = 'S_' + column['column_name']
-			column['column_original_name'] = column['column_name']
-
+		
+		column['column_original_name'] = column['column_name']
 		out_columns[column['column_name'].upper()] = column
 
 	return out_columns
