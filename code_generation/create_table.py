@@ -12,7 +12,7 @@ def create_table(config, table_definition):
 	# Set the columns
 	columns = get_table_definition(table_definition)
 	for column in config['TARGET_TABLE_EXTRA_COLUMNS']:
-		columns.append(f"{column['column_name']} {column['data_type']}")
+		columns.append(f"{column['target_table_column_name']} {column['data_type']}")
 
 	columns_sql = ",\n".join(["\t" + str(column) for column in columns])
 	sql = base_sql.replace('<TARGET_TABLE_COLUMNS>', columns_sql + ",\n")

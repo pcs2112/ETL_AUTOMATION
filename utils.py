@@ -33,12 +33,13 @@ def get_table_definition_from_source(db_name, table_name, server_name='', exclud
 		'MSTR_LOAD_ID': 1,
 		'ACTIVE_FLAG': 1
 	}
-
+	
+	target_table_column_prefix = get_config()['TARGET_TABLE_COLUMN_PREFIX']
 	out_columns = {}
 
 	for column in columns:
 		if column['column_name'].upper() in default_columns:
-			column['source_table_column_name'] = 'S_' + column['column_name']
+			column['source_table_column_name'] = target_table_column_prefix + column['column_name']
 		else:
 			column['source_table_column_name'] = column['column_name']
 			
