@@ -38,6 +38,7 @@ def get_table_definition_from_source(db_name, table_name, server_name=''):
 	for column in columns:
 		if column['column_name'].upper() in default_columns:
 			column['column_name'] = 'S_' + column['column_name']
+			column['column_original_name'] = column['column_name']
 
 		out_columns[column['column_name'].upper()] = column
 
@@ -150,19 +151,23 @@ def validate_preference_file(table_definition, config):
 	]
 
 	arr_args = [
+		'SOURCE_EXCLUDED_COLUMNS',
 		'TARGET_TABLE_EXTRA_KEY_COLUMNS',
 		'TARGET_TABLE_EXTRA_COLUMNS',
 		'UPDATE_MATCH_CHECK_COLUMNS'
 	]
-
+	
+	# Validate the string args
 	for str_arg in str_args:
 		if str_arg not in config or not isinstance(config[str_arg], str):
 			raise ValueError(f"{str_arg} must be a string.")
-
+		
+	# Validate the int args
 	for int_arg in int_args:
 		if int_arg not in config or not isinstance(config[int_arg], int):
 			raise ValueError(f"{int_arg} must be an integer.")
 
+	# Validate the array args
 	for arr_arg in arr_args:
 		if arr_arg not in config or not isinstance(config[arr_arg], list):
 			raise ValueError(f"{arr_arg} must be an array.")
