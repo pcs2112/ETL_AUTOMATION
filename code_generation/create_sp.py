@@ -5,7 +5,7 @@ from .utils import (
 )
 
 base_sql_file_name = 'create_sp.sql'
-out_file_name_postfix = 'CREATE_SP.sql'
+out_file_name_postfix = 'SP.sql'
 
 
 def get_insert_columns(table_definition, extra_columns):
@@ -84,6 +84,7 @@ def create_sp(config, table_definition):
 	target_table = get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
 	sql = sql.replace('<PERIOD_START_PREFIX>', period_start_prefix)
 	sql = sql.replace('<PERIOD_END_PREFIX>', period_start_prefix)
+	sql = sql.replace('<STORED_PROCEDURE_SCHEMA>', get_sp_name(target_table, config['STORED_PROCEDURE_SCHEMA']))
 	sql = sql.replace('<STORED_PROCEDURE_NAME>', get_sp_name(target_table, config['STORED_PROCEDURE_NAME']))
 	sql = sql.replace('<SOURCE_SERVER>', config['SOURCE_SERVER'])
 	sql = sql.replace('<SOURCE_DATABASE>', config['SOURCE_DATABASE'])
@@ -144,5 +145,7 @@ def create_sp(config, table_definition):
 	else:
 		sql = sql.replace('<MATCH_SECTION>', get_base_sql_code('create_sp_match_section_empty.sql'))
 
-	# Create the file and return its path
-	return create_sql_file(f"{config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}_{out_file_name_postfix}", sql)
+	# Create the file and return its pathC8_<STORED_PROCEDURE_SCHEMA>.<STORED_PROCEDURE_NAME>
+	return create_sql_file(
+		f"C8_{config['STORED_PROCEDURE_SCHEMA']}.{config['STORED_PROCEDURE_NAME']}_{out_file_name_postfix}", sql
+	)

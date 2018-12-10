@@ -2,7 +2,7 @@ from utils import get_base_sql_code, create_sql_file
 from .utils import get_table_definition, get_identity_column, get_current_timestamp, get_target_table_name
 
 base_sql_file_name = 'create_table.sql'
-out_file_name_postfix = 'CREATE_TABLE.sql'
+out_file_name_postfix = 'TABLE.sql'
 
 
 def create_table(config, table_definition):
@@ -57,4 +57,4 @@ def create_table(config, table_definition):
 		)
 
 	# Create the file and return its path
-	return create_sql_file(f"{config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}_{out_file_name_postfix}", sql)
+	return create_sql_file(f"C8_{config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}_{out_file_name_postfix}", sql)
