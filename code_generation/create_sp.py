@@ -68,22 +68,14 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
 
 
 def create_sp(config, table_definition):
-	period_start_prefix = ''
-
 	# Get the base sql for creating a table
 	sql = get_base_sql_code(base_sql_file_name)
 
-	# Set UTC sections
-	if get_is_utc(table_definition, config['SOURCE_TABLE_SEARCH_COLUMN']):
-		sql = sql.replace('<UTC_SECTION>', get_base_sql_code('create_sp_utc_section.sql'))
-		period_start_prefix = 'S'
-	else:
-		sql = sql.replace('<UTC_SECTION>', '')
+	# Get is UTC
+	is_utc = get_is_utc(table_definition, config['SOURCE_TABLE_SEARCH_COLUMN'])
 
 	# Set placeholder values
 	target_table = get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
-	sql = sql.replace('<PERIOD_START_PREFIX>', period_start_prefix)
-	sql = sql.replace('<PERIOD_END_PREFIX>', period_start_prefix)
 	sql = sql.replace('<STORED_PROCEDURE_SCHEMA>', get_sp_name(target_table, config['STORED_PROCEDURE_SCHEMA']))
 	sql = sql.replace('<STORED_PROCEDURE_NAME>', get_sp_name(target_table, config['STORED_PROCEDURE_NAME']))
 	sql = sql.replace('<SOURCE_SERVER>', config['SOURCE_SERVER'])
@@ -101,6 +93,7 @@ def create_sp(config, table_definition):
 	sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
 	sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
 	sql = sql.replace('<DATE_CREATED>', get_current_timestamp())
+	sql = sql.replace('<IS_UTC>', 1 if is_utc else 0)
 
 	# Set the source table definition columns
 	source_table_column_definition = get_table_definition(table_definition)
