@@ -93,7 +93,7 @@ def create_sp(config, table_definition):
 	sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
 	sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
 	sql = sql.replace('<DATE_CREATED>', get_current_timestamp())
-	sql = sql.replace('<IS_UTC>', 1 if is_utc else 0)
+	sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
 
 	# Set the source table definition columns
 	source_table_column_definition = get_table_definition(table_definition)
