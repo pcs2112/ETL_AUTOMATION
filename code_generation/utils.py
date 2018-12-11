@@ -28,10 +28,6 @@ def set_decimal(column, parts):
 	return set_numeric(column, parts)
 
 
-def set_money(column, parts):
-	return set_numeric(column, parts)
-
-
 def set_numeric(column, parts):
 	parts.append(f"[{column['data_type']}] ({column['precision']},{column['max_length']})")
 
