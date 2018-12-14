@@ -1,8 +1,6 @@
-from utils import get_base_sql_code, create_sql_file
-from .utils import (
-	get_table_definition, get_identity_column, get_column_names, get_current_timestamp, get_target_table_name,
-	get_sp_name
-)
+import src.utils
+import src.code_gen.utils
+
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'SP.sql'
@@ -69,15 +67,19 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
 
 def create_sp(config, table_definition):
 	# Get the base sql for creating a table
-	sql = get_base_sql_code(base_sql_file_name)
+	sql = src.utils.get_base_sql_code(base_sql_file_name)
 
 	# Get is UTC
 	is_utc = get_is_utc(table_definition, config['SOURCE_TABLE_SEARCH_COLUMN'])
 
 	# Set placeholder values
-	target_table = get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
-	sql = sql.replace('<STORED_PROCEDURE_SCHEMA>', get_sp_name(target_table, config['STORED_PROCEDURE_SCHEMA']))
-	sql = sql.replace('<STORED_PROCEDURE_NAME>', get_sp_name(target_table, config['STORED_PROCEDURE_NAME']))
+	target_table = src.code_gen.utils.get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
+	sql = sql.replace(
+		'<STORED_PROCEDURE_SCHEMA>', src.code_gen.utils.get_sp_name(target_table, config['STORED_PROCEDURE_SCHEMA'])
+	)
+	sql = sql.replace(
+		'<STORED_PROCEDURE_NAME>', src.code_gen.utils.get_sp_name(target_table, config['STORED_PROCEDURE_NAME'])
+	)
 	sql = sql.replace('<SOURCE_SERVER>', config['SOURCE_SERVER'])
 	sql = sql.replace('<SOURCE_DATABASE>', config['SOURCE_DATABASE'])
 	sql = sql.replace('<SOURCE_SCHEMA>', config['SOURCE_SCHEMA'])
@@ -92,16 +94,16 @@ def create_sp(config, table_definition):
 	sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
 	sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
 	sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
-	sql = sql.replace('<DATE_CREATED>', get_current_timestamp())
+	sql = sql.replace('<DATE_CREATED>', src.code_gen.utils.get_current_timestamp())
 	sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
 
 	# Set the source table definition columns
-	source_table_column_definition = get_table_definition(table_definition)
+	source_table_column_definition = src.code_gen.utils.get_table_definition(table_definition)
 	source_table_column_definition_sql = ",\n".join(["\t\t" + str(column) for column in source_table_column_definition])
 	sql = sql.replace('<SOURCE_TABLE_COLUMN_DEFINITION>', source_table_column_definition_sql)
 
 	# Set the source table column names
-	source_table_column_names = get_column_names(table_definition)
+	source_table_column_names = src.code_gen.utils.get_column_names(table_definition)
 	source_table_column_names_sql = ",\n".join(["\t\t" + str(column) for column in source_table_column_names])
 	sql = sql.replace('<SOURCE_TABLE_COLUMN_NAMES>', source_table_column_names_sql)
 
@@ -109,7 +111,7 @@ def create_sp(config, table_definition):
 	if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
 		sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', config['SOURCE_TABLE_PRIMARY_KEY'])
 	else:
-		identity_column = get_identity_column(table_definition)
+		identity_column = src.code_gen.utils.get_identity_column(table_definition)
 		sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', identity_column['column_name'])
 
 	# Set the target table update columns and values
@@ -131,14 +133,14 @@ def create_sp(config, table_definition):
 
 	# Set the match check columns
 	if len(config['UPDATE_MATCH_CHECK_COLUMNS']) > 0:
-		sql = sql.replace('<MATCH_SECTION>', get_base_sql_code('create_sp_match_section.sql'))
+		sql = sql.replace('<MATCH_SECTION>', src.utils.get_base_sql_code('create_sp_match_section.sql'))
 		sql = sql.replace('<UPDATE_MATCH_CHECK_COLUMNS>', get_update_match_check_columns_sql(
 			table_definition, config['UPDATE_MATCH_CHECK_COLUMNS']
 		))
 	else:
-		sql = sql.replace('<MATCH_SECTION>', get_base_sql_code('create_sp_match_section_empty.sql'))
+		sql = sql.replace('<MATCH_SECTION>', src.utils.get_base_sql_code('create_sp_match_section_empty.sql'))
 
 	# Create the file and return its pathC8_<STORED_PROCEDURE_SCHEMA>.<STORED_PROCEDURE_NAME>
-	return create_sql_file(
+	return src.utils.create_sql_file(
 		f"C8_{config['STORED_PROCEDURE_SCHEMA']}.{config['STORED_PROCEDURE_NAME']}_{out_file_name_postfix}", sql
 	)

@@ -1,9 +1,9 @@
 import os
 import json
-from config import get_config
-from mssql_connection import fetch_rows
-from code_generation.utils import get_column_exists, get_sp_name, get_target_table_name
-from excel_utils import get_workbook, get_workbook_data
+import src.code_gen.utils
+from src.config import get_config
+from src.mssql_connection import fetch_rows
+from src.excel_utils import get_workbook, get_workbook_data
 
 
 def get_table_definition_from_source(db_name, table_name, server_name='', excluded_columns=()):
@@ -33,7 +33,7 @@ def get_table_definition_from_source(db_name, table_name, server_name='', exclud
 		'MSTR_LOAD_ID': 1,
 		'ACTIVE_FLAG': 1
 	}
-	
+
 	target_table_column_prefix = get_config()['TARGET_TABLE_COLUMN_PREFIX']
 	out_columns = {}
 
@@ -42,9 +42,9 @@ def get_table_definition_from_source(db_name, table_name, server_name='', exclud
 			column['source_table_column_name'] = target_table_column_prefix + column['column_name']
 		else:
 			column['source_table_column_name'] = column['column_name']
-			
+
 		out_columns[column['column_name'].upper()] = column
-	
+
 	if len(excluded_columns) > 0:
 		for excluded_column in excluded_columns:
 			out_columns.pop(excluded_column)
@@ -163,12 +163,12 @@ def validate_preference_file(table_definition, config):
 		'TARGET_TABLE_EXTRA_COLUMNS',
 		'UPDATE_MATCH_CHECK_COLUMNS'
 	]
-	
+
 	# Validate the string args
 	for str_arg in str_args:
 		if str_arg not in config or not isinstance(config[str_arg], str):
 			raise ValueError(f"{str_arg} must be a string.")
-		
+
 	# Validate the int args
 	for int_arg in int_args:
 		if int_arg not in config or not isinstance(config[int_arg], int):
@@ -181,19 +181,19 @@ def validate_preference_file(table_definition, config):
 
 	# Validate the search column
 	search_column_name = config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
-	if search_column_name != '' and not get_column_exists(table_definition, search_column_name):
+	if search_column_name != '' and not src.code_gen.utils.get_column_exists(table_definition, search_column_name):
 		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
 
 	# Validate the update check columns
 	if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
 		for column_name in config['TARGET_TABLE_EXTRA_KEY_COLUMNS']:
-			if not get_column_exists(table_definition, column_name):
+			if not src.code_gen.utils.get_column_exists(table_definition, column_name):
 				raise ValueError(f"TARGET_TABLE_EXTRA_KEY_COLUMNS: \"{column_name}\" is an invalid column.")
 
 	# Validate the update check columns
 	if len(config['UPDATE_MATCH_CHECK_COLUMNS']) > 0:
 		for column_name in config['UPDATE_MATCH_CHECK_COLUMNS']:
-			if not get_column_exists(table_definition, column_name):
+			if not src.code_gen.utils.get_column_exists(table_definition, column_name):
 				raise ValueError(f"UPDATE_MATCH_CHECK_COLUMNS: \"{column_name}\" is an invalid column.")
 
 
@@ -212,10 +212,10 @@ def create_preference_files(file_name):
 		obj = data[i]
 
 		# Get the target table name
-		target_table = get_target_table_name(obj['SOURCE_TABLE'], obj['TARGET_TABLE'])
+		target_table = src.code_gen.utils.get_target_table_name(obj['SOURCE_TABLE'], obj['TARGET_TABLE'])
 
 		# Get the stored procedure name
-		sp_name = get_sp_name(target_table, obj['STORED_PROCEDURE_NAME'])
+		sp_name = src.code_gen.utils.get_sp_name(target_table, obj['STORED_PROCEDURE_NAME'])
 
 		# Get the target table extra columns
 		target_table_extra_cols_list = split_string(obj['TARGET_TABLE_EXTRA_COLUMNS'], '|')

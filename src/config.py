@@ -2,7 +2,7 @@
 import os
 from dotenv import load_dotenv
 
-ROOT_DIR = os.path.join(os.path.dirname(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # load dotenv
 dotenv_path = os.path.join(ROOT_DIR, '.env')
@@ -13,7 +13,7 @@ ETL_CONFIG_IN_DIR = os.path.join(ROOT_DIR, 'in')
 ETL_CONFIG_OUT_DIR = os.path.join(ROOT_DIR, 'out')
 
 # Code generation dirs
-CODE_GENERATION_IN_DIR = os.path.join(ROOT_DIR, 'code_generation/in')
+CODE_GENERATION_IN_DIR = os.path.join(ROOT_DIR, 'src/code_gen/in')
 
 # Set the settings
 config = {

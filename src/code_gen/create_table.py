@@ -1,5 +1,5 @@
-from utils import get_base_sql_code, create_sql_file
-from .utils import get_table_definition, get_identity_column, get_current_timestamp, get_target_table_name
+import src.utils
+import src.code_gen.utils
 
 base_sql_file_name = 'create_table.sql'
 out_file_name_postfix = 'TABLE.sql'
@@ -7,10 +7,10 @@ out_file_name_postfix = 'TABLE.sql'
 
 def create_table(config, table_definition):
 	# Get the base sql for creating a table
-	base_sql = get_base_sql_code(base_sql_file_name)
+	base_sql = src.utils.get_base_sql_code(base_sql_file_name)
 
 	# Set the columns
-	columns = get_table_definition(table_definition)
+	columns = src.code_gen.utils.get_table_definition(table_definition)
 	for column in config['TARGET_TABLE_EXTRA_COLUMNS']:
 		columns.append(f"{column['column_name']} {column['data_type']}")
 
@@ -22,7 +22,7 @@ def create_table(config, table_definition):
 	if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
 		key_columns = [f"{config['SOURCE_TABLE_PRIMARY_KEY']} ASC"]
 	else:
-		identity_column = get_identity_column(table_definition)
+		identity_column = src.code_gen.utils.get_identity_column(table_definition)
 		if identity_column:
 			key_columns = [f"{identity_column['column_name']} ASC"]
 
@@ -37,10 +37,12 @@ def create_table(config, table_definition):
 
 	# Set the target schema and target table
 	sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
-	sql = sql.replace('<TARGET_TABLE>', get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE']))
+	sql = sql.replace(
+		'<TARGET_TABLE>', src.code_gen.utils.get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
+	)
 
 	# Set the date
-	sql = sql.replace('<DATE_CREATED>', get_current_timestamp())
+	sql = sql.replace('<DATE_CREATED>', src.code_gen.utils.get_current_timestamp())
 
 	# Set the data partition name
 	if config['DATA_PARTITION_COLUMN'] == '':
@@ -57,4 +59,6 @@ def create_table(config, table_definition):
 		)
 
 	# Create the file and return its path
-	return create_sql_file(f"C8_{config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}_{out_file_name_postfix}", sql)
+	return src.utils.create_sql_file(
+		f"C8_{config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}_{out_file_name_postfix}", sql
+	)
