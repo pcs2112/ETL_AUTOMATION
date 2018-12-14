@@ -1,5 +1,5 @@
-import src.utils
 import src.preference_file_utils
+import src.utils
 import src.code_gen.utils
 from src.config import get_config
 from src.mssql_connection import init_db, close
