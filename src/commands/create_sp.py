@@ -1,4 +1,5 @@
 import src.utils
+import src.preference_file_utils
 import src.code_gen.utils
 from src.config import get_config
 from src.mssql_connection import init_db, close
@@ -10,7 +11,7 @@ def create_sp(preference_filename=''):
 		return
 
 	try:
-		pref_config = src.utils.get_configuration_from_preference_file(preference_filename)
+		pref_config = src.preference_file_utils.get_configuration_from_preference_file(preference_filename)
 	except FileExistsError as e:
 		print(str(e))
 		return
@@ -39,7 +40,7 @@ def create_sp(preference_filename=''):
 	)
 
 	try:
-		src.utils.validate_preference_file(table_definition, pref_config)
+		src.preference_file_utils.validate_preference_file(table_definition, pref_config)
 	except ValueError as e:
 		print(f"Error on {preference_filename}:")
 		print(str(e))
