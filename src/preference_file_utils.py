@@ -2,8 +2,10 @@ import os
 import json
 import src.utils
 import src.code_gen.utils
+import src.db_utils
 from src.config import get_config
-from src.excel_utils import get_workbook, get_workbook_data
+from src.excel_utils import read_workbook, read_workbook_data
+from src.mssql_connection import init_db, close
 
 
 def get_configuration_file_path(file_name):
@@ -124,19 +126,18 @@ def validate_preference_file(table_definition, config):
 				raise ValueError(f"UPDATE_MATCH_CHECK_COLUMNS: \"{column_name}\" is an invalid column.")
 
 
-def create_json_preference_files(file_name):
+def get_excel_preference_file_data(file_name):
 	"""
-	Creates the json preference files using the data in the
-	specified excel file.
+	Returns a list of dicts containing the data for each preference file.
 	:param str file_name:
 	:return list
 	"""
-	wb = get_workbook(get_configuration_file_path(file_name))
-	data = get_workbook_data(wb)
-	files = []
+	wb = read_workbook(get_configuration_file_path(file_name))
+	in_data = read_workbook_data(wb)
+	out_data = []
 
-	for i in range(len(data)):
-		obj = data[i]
+	for i in range(len(in_data)):
+		obj = in_data[i]
 
 		# Get the target table name
 		target_table = src.code_gen.utils.get_target_table_name(obj['SOURCE_TABLE'], obj['TARGET_TABLE'])
@@ -189,9 +190,40 @@ def create_json_preference_files(file_name):
 			'SOURCE_TYPE': obj['SOURCE_TYPE']
 		}
 
-		files.append(create_json_preference_file(
-			f"C8_{sp_name}.json",
-			json.dumps(config, indent=4)
-		))
+		out_data.append(config)
 
-	return files
+	return out_data
+
+
+def create_excel_preference_file(in_data):
+	for i, row in enumerate(in_data):
+		create_excel_preference_file_row(row)
+
+
+def create_excel_preference_file_row(pref_config):
+	# Init DB connection
+	db_config = {
+		'DB_SERVER': pref_config['SOURCE_SERVER'],
+		'DB_NAME': pref_config['SOURCE_DATABASE'],
+		'DB_USER': '',
+		'DB_PASSWORD': '',
+		'DB_DRIVER': 'SQL Server',
+		'DB_TRUSTED_CONNECTION': 1
+	}
+
+	init_db(db_config)
+
+	# Get the table definition from the specified config
+	table_definition = src.db_utils.get_table_definition(
+		pref_config['SOURCE_DATABASE'],
+		pref_config['SOURCE_TABLE'],
+		'' if pref_config['SOURCE_SERVER'] == 'localhost' else pref_config['SOURCE_SERVER'],
+		pref_config['SOURCE_EXCLUDED_COLUMNS']
+	)
+
+	try:
+		validate_preference_file(table_definition, pref_config)
+	except ValueError as e:
+		print(str(e))
+
+	close()
