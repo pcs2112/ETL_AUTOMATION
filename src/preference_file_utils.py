@@ -42,9 +42,9 @@ def get_configuration_from_preference_file(file_name):
 	return json.loads(get_configuration_file(file_name))
 
 
-def create_preference_file(file_name, contents):
+def create_json_preference_file(file_name, contents):
 	"""
-	Writes and creates a preference file.
+	Writes and creates a JSON preference file.
 	:param str file_name: File name
 	:param str contents: The file's contents
 	:return: str New file path
@@ -124,7 +124,7 @@ def validate_preference_file(table_definition, config):
 				raise ValueError(f"UPDATE_MATCH_CHECK_COLUMNS: \"{column_name}\" is an invalid column.")
 
 
-def create_preference_files(file_name):
+def create_json_preference_files(file_name):
 	"""
 	Creates the json preference files using the data in the
 	specified excel file.
@@ -149,7 +149,7 @@ def create_preference_files(file_name):
 		target_table_extra_cols = []
 
 		for col in target_table_extra_cols_list:
-			props =  src.utils.split_string(col, ';')
+			props = src.utils.split_string(col, ';')
 			if len(props) > 0:
 				target_table_extra_cols.append({
 					'column_name': props[0],
@@ -189,7 +189,7 @@ def create_preference_files(file_name):
 			'SOURCE_TYPE': obj['SOURCE_TYPE']
 		}
 
-		files.append(create_preference_file(
+		files.append(create_json_preference_file(
 			f"C8_{sp_name}.json",
 			json.dumps(config, indent=4)
 		))
