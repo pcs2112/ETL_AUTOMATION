@@ -59,7 +59,8 @@ def serialize_value_for_excel(value, delimiter=";"):
 def serialize_list_for_excel(arr, delimiter="|"):
 	""" Serializes a list into a string. """
 	out_str = ''
-	for value in arr:
-		out_str = serialize_value_for_excel(value) + delimiter
+	if len(arr) > 0:
+		for value in arr:
+			out_str = serialize_value_for_excel(value) + delimiter
 
 	return out_str.rstrip(delimiter)
