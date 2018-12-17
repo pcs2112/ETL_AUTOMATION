@@ -48,6 +48,6 @@ def write_workbook_data(filename, sheets, data):
 
 		for i, row in enumerate(data):
 			for x, cell in enumerate(row):
-				ws.write_column(x, i, cell)
+				ws.write(i, x, cell)
 
 	wb.save(filename)
