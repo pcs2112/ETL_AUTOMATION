@@ -54,7 +54,7 @@ def search_column_exists(schema_name, table_name, column_name):
 	:param str schema_name: Schema name
 	:param str table_name: Database table name
 	:param str column_name: Search column name
-	:return list
+	:return bool
 	"""
 	sql = """
 with table_w_DateLstMod (
@@ -113,3 +113,24 @@ from table_indexes;
 """
 	rows = fetch_rows(sql, [schema_name, table_name, column_name])
 	return len(rows) > 0
+
+
+def get_record_counts(schema_name, table_name, column_name):
+	"""
+	Returns the records counts for the specified table.
+	:param str schema_name: Schema name
+	:param str table_name: Database table name
+	:param str column_name: Search column name
+	:return list
+	"""
+	sql = """
+select
+	count(*) COUNT,
+	min({2}) MIN_VALUE,
+	max({2}) MAX_VALUE,
+	datediff(month, min({2}), max({2})) MONTH_CNT
+from
+	{0}.{1} with(nolock);
+	"""
+
+	return fetch_rows(sql.format(schema_name, table_name, column_name))
