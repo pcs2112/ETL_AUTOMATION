@@ -1,8 +1,8 @@
 from src.config import get_config
-from src.mssql_connection import fetch_rows
+from src.mssql_connection import fetch_row, fetch_rows
 
 
-def get_table_definition(db_name, table_name, server_name='', excluded_columns=()):
+def get_table_definition(db_name, table_name, server_name, excluded_columns=()):
 	"""
 	Returns the table definition.
 	:param str db_name: Database name
@@ -11,6 +11,7 @@ def get_table_definition(db_name, table_name, server_name='', excluded_columns=(
 	:param list excluded_columns: Columns to exclude
 	:return list
 	"""
+	server_name = '' if server_name == 'localhost' else server_name
 	server_name = f'[{server_name}].' if server_name else ''
 
 	sql = ("SELECT T.name AS TABLE_NAME, C.name AS COLUMN_NAME, P.name AS DATA_TYPE, "
@@ -48,9 +49,9 @@ def get_table_definition(db_name, table_name, server_name='', excluded_columns=(
 	return out_columns
 
 
-def search_column_exists(schema_name, table_name, column_name):
+def column_index_exists(schema_name, table_name, column_name):
 	"""
-	Checks the search column exists.
+	Checks an index exists for the specified column name.
 	:param str schema_name: Schema name
 	:param str table_name: Database table name
 	:param str column_name: Search column name
@@ -111,8 +112,8 @@ select
 	SchemaName, TableName, ColName, DATA_TYPE, index_name, index_type, object_id
 from table_indexes;
 """
-	rows = fetch_rows(sql, [schema_name, table_name, column_name])
-	return len(rows) > 0
+	row = fetch_row(sql, [schema_name, table_name, column_name])
+	return row is not None
 
 
 def get_record_counts(schema_name, table_name, column_name):
@@ -133,4 +134,4 @@ from
 	{0}.{1} with(nolock);
 	"""
 
-	return fetch_rows(sql.format(schema_name, table_name, column_name))
+	return fetch_row(sql.format(schema_name, table_name, column_name))
