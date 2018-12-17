@@ -40,3 +40,26 @@ def split_string(value, delimiter=','):
 				parts.append(tmp_part)
 
 	return parts
+
+
+def serialize_value_for_excel(value, delimiter=";"):
+	""" Serializes an value into a string. """
+	out_str = ''
+	if isinstance(value, dict):
+		for value in value.values():
+			out_str += value + delimiter
+			
+		out_str = out_str.rstrip(delimiter)
+	else:
+		out_str = value
+		
+	return out_str
+
+
+def serialize_list_for_excel(arr, delimiter="|"):
+	""" Serializes a list into a string. """
+	out_str = ''
+	for value in arr:
+		out_str = serialize_value_for_excel(value) + delimiter
+
+	return out_str.rstrip(delimiter)
