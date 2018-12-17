@@ -1,5 +1,6 @@
 import src.preference_file_utils
 import src.utils
+import src.db_utils
 import src.code_gen.utils
 from src.config import get_config
 from src.mssql_connection import init_db, close
@@ -32,7 +33,7 @@ def create_sp(preference_filename=''):
 	init_db(db_config)
 
 	# Get the table definition from the specified config
-	table_definition = src.utils.get_table_definition_from_source(
+	table_definition = src.db_utils.get_table_definition(
 		pref_config['SOURCE_DATABASE'],
 		pref_config['SOURCE_TABLE'],
 		'' if pref_config['SOURCE_SERVER'] == 'localhost' else pref_config['SOURCE_SERVER'],
