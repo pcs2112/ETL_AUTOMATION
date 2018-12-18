@@ -73,7 +73,7 @@ def create_json_preference_files(file_name):
 			f"C8_{config['STORED_PROCEDURE_NAME']}.json",
 			json.dumps(config, indent=4)
 		))
-		
+
 	return files
 
 
@@ -117,15 +117,15 @@ def create_excel_preference_file(in_filename):
 		'ROW_MONTH_COUNT',
 		'ERROR_MESSAGE'
 	]
-	
+
 	rows.append(header)
-	
+
 	for i, row in enumerate(data):
 		rows.append(create_excel_preference_file_row(row))
-	
+
 	out_filename, file_extension = os.path.splitext(in_filename)
 	out_filename = out_filename + '_final' + file_extension
-	
+
 	src.excel_utils.write_workbook_data(out_filename, ['ETL_STORED_PROCEDURES'], rows)
 	return out_filename
 
@@ -209,9 +209,9 @@ def create_excel_preference_file_row(pref_config):
 		'DB_DRIVER': 'SQL Server',
 		'DB_TRUSTED_CONNECTION': 1
 	}
-	
+
 	init_db(db_config)
-	
+
 	# Get the table definition from the specified config
 	err = ''
 	search_column_name = ''
@@ -223,7 +223,7 @@ def create_excel_preference_file_row(pref_config):
 		'max_value': '',
 		'month_cnt': ''
 	}
-	
+
 	try:
 		table_definition = src.db_utils.get_table_definition(
 			pref_config['SOURCE_DATABASE'],
@@ -231,10 +231,11 @@ def create_excel_preference_file_row(pref_config):
 			pref_config['SOURCE_SERVER'],
 			pref_config['SOURCE_EXCLUDED_COLUMNS']
 		)
-		
-		validate_preference_file_config(pref_config, table_definition)
+
 		search_column_name = pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
-		
+
+		validate_preference_file_config(pref_config, table_definition)
+
 		try:
 			counts = src.db_utils.get_record_counts(
 				pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'], search_column_name
@@ -255,9 +256,9 @@ def create_excel_preference_file_row(pref_config):
 		search_column_has_index = False
 	except Exception as e:
 		err = str(e)
-	
+
 	close()
-	
+
 	row = [
 		pref_config['SOURCE_SERVER'],
 		pref_config['SOURCE_DATABASE'],
@@ -294,7 +295,7 @@ def create_excel_preference_file_row(pref_config):
 		counts['month_cnt'],
 		err
 	]
-	
+
 	return row
 
 
@@ -323,35 +324,35 @@ def validate_preference_file_config(config, table_definition):
 		'STORED_PROCEDURE_NAME',
 		'SOURCE_TYPE'
 	]
-	
+
 	int_args = [
 		'MIN_CALL_DURATION_MINUTES',
 		'MAX_CALL_DURATION_MINUTES',
 		'ETL_PRIORITY'
 	]
-	
+
 	arr_args = [
 		'SOURCE_EXCLUDED_COLUMNS',
 		'TARGET_TABLE_EXTRA_KEY_COLUMNS',
 		'TARGET_TABLE_EXTRA_COLUMNS',
 		'UPDATE_MATCH_CHECK_COLUMNS'
 	]
-	
+
 	# Validate the string args
 	for str_arg in str_args:
 		if str_arg not in config or not isinstance(config[str_arg], str):
 			raise ValueError(f"{str_arg} must be a string.")
-	
+
 	# Validate the int args
 	for int_arg in int_args:
 		if int_arg not in config or not isinstance(config[int_arg], int):
 			raise ValueError(f"{int_arg} must be an integer.")
-	
+
 	# Validate the array args
 	for arr_arg in arr_args:
 		if arr_arg not in config or not isinstance(config[arr_arg], list):
 			raise ValueError(f"{arr_arg} must be an array.")
-	
+
 	# Validate the search column
 	search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
 	if not isinstance(search_column, dict) \
@@ -359,14 +360,14 @@ def validate_preference_file_config(config, table_definition):
 		raise SearchColumnInvalidValue(
 			'SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.'
 		)
-	
+
 	search_column_name = search_column['column_name']
 	if search_column_name == '':
 		raise SearchColumnInvalidValue('SOURCE_TABLE_SEARCH_COLUMN: column name can\'t be empty.')
-	
+
 	if not src.code_gen.utils.get_column_exists(table_definition, search_column_name):
 		raise SearchColumnNotFound(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
-	
+
 	# Check the index exists
 	try:
 		search_column_index_exists = src.db_utils.column_index_exists(
@@ -376,16 +377,16 @@ def validate_preference_file_config(config, table_definition):
 		)
 	except Exception as e:
 		raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
-	
+
 	if not search_column_index_exists:
 		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
-	
+
 	# Validate the update check columns
 	if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
 		for column_name in config['TARGET_TABLE_EXTRA_KEY_COLUMNS']:
 			if not src.code_gen.utils.get_column_exists(table_definition, column_name):
 				raise ValueError(f"TARGET_TABLE_EXTRA_KEY_COLUMNS: \"{column_name}\" is an invalid column.")
-	
+
 	# Validate the update check columns
 	if len(config['UPDATE_MATCH_CHECK_COLUMNS']) > 0:
 		for column_name in config['UPDATE_MATCH_CHECK_COLUMNS']:
