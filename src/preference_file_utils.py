@@ -214,7 +214,9 @@ def create_excel_preference_file_row(pref_config):
 
 	# Get the table definition from the specified config
 	err = ''
-	search_column_name = getattr(pref_config['SOURCE_TABLE_SEARCH_COLUMN'], 'column_name', '')
+	search_column_name = ''
+	if 'column_name' in pref_config['SOURCE_TABLE_SEARCH_COLUMN']:
+		search_column_name = pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
 	search_column_exists = True
 	search_column_has_index = True
 	counts = {
@@ -353,7 +355,7 @@ def validate_preference_file_config(config, table_definition):
 
 	# Validate the search column
 	search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
-	if not hasattr(search_column, 'column_name') or not hasattr(search_column, 'is_utc'):
+	if not isinstance(search_column, dict) or 'column_name' not in search_column or 'is_utc' not in search_column:
 		raise SearchColumnInvalidValue(
 			'SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.'
 		)
