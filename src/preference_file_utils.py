@@ -7,6 +7,7 @@ import src.utils
 from src.config import get_config
 from src.excel_utils import read_workbook, read_workbook_data
 from src.mssql_connection import init_db, close
+from src.exceptions import SearchColumnNoIndex, SearchColumnNotFound, SearchColumnInvalidValue
 
 
 def get_configuration_file_path(file_name):
@@ -108,7 +109,13 @@ def create_excel_preference_file(in_filename):
 		'MAX_CALL_DURATION_MINUTES',
 		'ETL_PRIORITY',
 		'SOURCE_TYPE',
-		'ERROR'
+		'SOURCE_TABLE_SEARCH_COLUMN_EXISTS',
+		'SOURCE_TABLE_SEARCH_COLUMN_INDEX_EXISTS',
+		'ROW_COUNT',
+		'ROW_MIN_DATE',
+		'ROW_MAX_DATE',
+		'ROW_MONTH_COUNT',
+		'ERROR_MESSAGE'
 	]
 	
 	rows.append(header)
@@ -207,6 +214,16 @@ def create_excel_preference_file_row(pref_config):
 	
 	# Get the table definition from the specified config
 	err = ''
+	search_column_name = ''
+	search_column_exists = True
+	search_column_has_index = True
+	counts = {
+		'count': '',
+		'min_value': '',
+		'max_value': '',
+		'month_cnt': ''
+	}
+	
 	try:
 		table_definition = src.db_utils.get_table_definition(
 			pref_config['SOURCE_DATABASE'],
@@ -216,6 +233,26 @@ def create_excel_preference_file_row(pref_config):
 		)
 		
 		validate_preference_file_config(pref_config, table_definition)
+		search_column_name = pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
+		
+		try:
+			counts = src.db_utils.get_record_counts(
+				pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'], search_column_name
+			)
+		except Exception as e:
+			raise SearchColumnNoIndex(str(e))
+	except SearchColumnInvalidValue as e:
+		err = str(e)
+		search_column_exists = False
+		search_column_has_index = False
+	except SearchColumnNotFound as e:
+		err = str(e)
+		search_column_exists = False
+		search_column_has_index = False
+	except SearchColumnNoIndex as e:
+		err = str(e)
+		search_column_exists = False
+		search_column_has_index = False
 	except Exception as e:
 		err = str(e)
 	
@@ -227,8 +264,8 @@ def create_excel_preference_file_row(pref_config):
 		pref_config['SOURCE_SCHEMA'],
 		pref_config['SOURCE_TABLE'],
 		pref_config['SOURCE_DATA_MART'],
-		pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'],
-		'true' if pref_config['SOURCE_TABLE_SEARCH_COLUMN']['is_utc'] else 'false',
+		search_column_name,
+		'true' if search_column_exists and pref_config['SOURCE_TABLE_SEARCH_COLUMN']['is_utc'] else 'false',
 		pref_config['SOURCE_TABLE_SEARCH_CONDITION'],
 		pref_config['SOURCE_TABLE_PRIMARY_KEY'],
 		pref_config['SOURCE_EXCLUDED_COLUMNS'],
@@ -249,6 +286,12 @@ def create_excel_preference_file_row(pref_config):
 		pref_config['MAX_CALL_DURATION_MINUTES'],
 		pref_config['ETL_PRIORITY'],
 		pref_config['SOURCE_TYPE'],
+		'true' if search_column_exists else 'false',
+		'true' if search_column_has_index else 'false',
+		counts['count'],
+		counts['min_value'],
+		counts['max_value'],
+		counts['month_cnt'],
 		err
 	]
 	
@@ -313,14 +356,16 @@ def validate_preference_file_config(config, table_definition):
 	search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
 	if not isinstance(search_column, dict) \
 			or not hasattr(search_column, 'column_name') or not hasattr(search_column, 'is_utc'):
-		raise ValueError('SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.')
+		raise SearchColumnInvalidValue(
+			'SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.'
+		)
 	
 	search_column_name = search_column['column_name']
 	if search_column_name == '':
-		raise ValueError('SOURCE_TABLE_SEARCH_COLUMN: column name can\'t be empty.')
+		raise SearchColumnInvalidValue('SOURCE_TABLE_SEARCH_COLUMN: column name can\'t be empty.')
 	
 	if not src.code_gen.utils.get_column_exists(table_definition, search_column_name):
-		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
+		raise SearchColumnNotFound(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
 	
 	# Check the index exists
 	try:
@@ -330,7 +375,7 @@ def validate_preference_file_config(config, table_definition):
 			search_column_name
 		)
 	except Exception as e:
-		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
+		raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
 	
 	if not search_column_index_exists:
 		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
