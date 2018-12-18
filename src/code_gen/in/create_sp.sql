@@ -55,7 +55,7 @@ AS
 					SET @SPERIOD_END_DTTM = @PERIOD_END_DTTM;
 				END
 		END
-	ELSE (@IS_UTC = 1)
+	ELSE IF(@IS_UTC = 1)
 	BEGIN
 		DECLARE @dtEST DATETIME;
 		SET @dtEST = getdate();
