@@ -58,6 +58,7 @@ def close():
 	db = getattr(this, '_database', None)
 	if db is not None:
 		db.close()
+		this._database = None
 
 
 def result_as_dict(schema, row):
