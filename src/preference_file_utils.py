@@ -378,7 +378,7 @@ def validate_preference_file_config(config, table_definition):
 		raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
 
 	if not search_column_index_exists:
-		raise ValueError(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
+		raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
 
 	# Validate the update check columns
 	if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:

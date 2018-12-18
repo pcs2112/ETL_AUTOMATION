@@ -4,6 +4,7 @@ import src.code_gen.utils
 import src.utils
 from src.config import get_config
 from src.mssql_connection import init_db, close
+from src.exceptions import SearchColumnNoIndex
 
 
 def create_sp(preference_filename=''):
@@ -42,7 +43,9 @@ def create_sp(preference_filename=''):
 
 	try:
 		src.preference_file_utils.validate_preference_file_config(pref_config, table_definition)
-	except ValueError as e:
+	except SearchColumnNoIndex:
+		pass
+	except Exception as e:
 		print(f"Error on {preference_filename}:")
 		print(str(e))
 		close()
