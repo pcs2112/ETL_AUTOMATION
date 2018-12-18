@@ -214,7 +214,7 @@ def create_excel_preference_file_row(pref_config):
 
 	# Get the table definition from the specified config
 	err = ''
-	search_column_name = ''
+	search_column_name = getattr(pref_config['SOURCE_TABLE_SEARCH_COLUMN'], 'column_name', '')
 	search_column_exists = True
 	search_column_has_index = True
 	counts = {
@@ -232,16 +232,7 @@ def create_excel_preference_file_row(pref_config):
 			pref_config['SOURCE_EXCLUDED_COLUMNS']
 		)
 
-		search_column_name = pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
-
 		validate_preference_file_config(pref_config, table_definition)
-
-		try:
-			counts = src.db_utils.get_record_counts(
-				pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'], search_column_name
-			)
-		except Exception as e:
-			raise SearchColumnNoIndex(str(e))
 	except SearchColumnInvalidValue as e:
 		err = str(e)
 		search_column_exists = False
@@ -252,10 +243,17 @@ def create_excel_preference_file_row(pref_config):
 		search_column_has_index = False
 	except SearchColumnNoIndex as e:
 		err = str(e)
-		search_column_exists = False
 		search_column_has_index = False
 	except Exception as e:
 		err = str(e)
+
+	if search_column_exists:
+		try:
+			counts = src.db_utils.get_record_counts(
+				pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'], search_column_name
+			)
+		except Exception as e:
+			err = str(e)
 
 	close()
 
@@ -290,8 +288,8 @@ def create_excel_preference_file_row(pref_config):
 		'true' if search_column_exists else 'false',
 		'true' if search_column_has_index else 'false',
 		counts['count'],
-		counts['min_value'],
-		counts['max_value'],
+		src.utils.get_date_str(counts['min_value']),
+		src.utils.get_date_str(counts['max_value']),
 		counts['month_cnt'],
 		err
 	]
@@ -355,8 +353,7 @@ def validate_preference_file_config(config, table_definition):
 
 	# Validate the search column
 	search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
-	if not isinstance(search_column, dict) \
-			or not hasattr(search_column, 'column_name') or not hasattr(search_column, 'is_utc'):
+	if not hasattr(search_column, 'column_name') or not hasattr(search_column, 'is_utc'):
 		raise SearchColumnInvalidValue(
 			'SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.'
 		)

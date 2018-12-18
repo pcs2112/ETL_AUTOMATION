@@ -1,4 +1,5 @@
 import os
+from datetime import *
 from src.config import get_config
 
 
@@ -48,11 +49,11 @@ def serialize_value_for_excel(value, delimiter=";"):
 	if isinstance(value, dict):
 		for value in value.values():
 			out_str += value + delimiter
-			
+
 		out_str = out_str.rstrip(delimiter)
 	else:
 		out_str = value
-		
+
 	return out_str
 
 
@@ -64,3 +65,13 @@ def serialize_list_for_excel(arr, delimiter="|"):
 			out_str = serialize_value_for_excel(value) + delimiter
 
 	return out_str.rstrip(delimiter)
+
+
+def get_date_str(obj, datetime_format='%Y-%m-%d %H:%M:%S'):
+	""" Returns the date obj in a string format. """
+	if isinstance(obj, datetime):
+		return obj.strftime(datetime_format)
+	elif isinstance(obj, date):
+		return obj.strftime(datetime_format)
+	else:
+		return obj
