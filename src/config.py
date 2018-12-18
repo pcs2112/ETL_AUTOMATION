@@ -13,7 +13,7 @@ ETL_CONFIG_IN_DIR = os.path.join(ROOT_DIR, 'in')
 ETL_CONFIG_OUT_DIR = os.path.join(ROOT_DIR, 'out')
 
 # Code generation dirs
-CODE_GENERATION_IN_DIR = os.path.join(ROOT_DIR, 'src/code_gen/in')
+CODE_GENERATION_IN_DIR = os.path.join(ROOT_DIR, 'src', 'code_gen', 'in')
 
 # Set the settings
 config = {
@@ -29,6 +29,8 @@ config = {
 	'CODE_GENERATION_IN_DIR': CODE_GENERATION_IN_DIR,
 	'TARGET_TABLE_COLUMN_PREFIX': 'S_'
 }
+
+print(config)
 
 
 def get_config():
