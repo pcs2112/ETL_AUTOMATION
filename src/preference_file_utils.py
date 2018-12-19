@@ -124,7 +124,7 @@ def create_excel_preference_file(in_filename):
 		rows.append(create_excel_preference_file_row(row))
 
 	out_filename, file_extension = os.path.splitext(in_filename)
-	out_filename = out_filename + '_final' + file_extension
+	out_filename = out_filename + '_' + src.utils.get_filename_date_postfix() + file_extension
 
 	src.excel_utils.write_workbook_data(out_filename, ['ETL_STORED_PROCEDURES'], rows)
 	return out_filename
