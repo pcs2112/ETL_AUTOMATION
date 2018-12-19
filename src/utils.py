@@ -75,3 +75,8 @@ def get_date_str(obj, datetime_format='%Y-%m-%d %H:%M:%S'):
 		return obj.strftime(datetime_format)
 	else:
 		return obj
+	
+	
+def get_filename_date_postfix():
+	""" Returns a timestamp string append to file names. """
+	return datetime.now().strftime('%Y%m%d_%H%M%S')
