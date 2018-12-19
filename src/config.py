@@ -30,8 +30,6 @@ config = {
 	'TARGET_TABLE_COLUMN_PREFIX': 'S_'
 }
 
-print(config)
-
 
 def get_config():
 	return config
