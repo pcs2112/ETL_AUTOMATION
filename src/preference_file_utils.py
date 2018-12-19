@@ -191,7 +191,12 @@ def get_excel_preference_file_data(file_name):
 			'MIN_CALL_DURATION_MINUTES': int(obj['MIN_CALL_DURATION_MINUTES']),
 			'MAX_CALL_DURATION_MINUTES': int(obj['MAX_CALL_DURATION_MINUTES']),
 			'ETL_PRIORITY': int(obj['ETL_PRIORITY']),
-			'SOURCE_TYPE': obj['SOURCE_TYPE']
+			'SOURCE_TYPE': obj['SOURCE_TYPE'],
+			'ROW_COUNT': obj.get('ROW_COUNT', ''),
+			'ROW_MIN_DATE': obj.get('ROW_MIN_DATE', ''),
+			'ROW_MAX_DATE': obj.get('ROW_MAX_DATE', ''),
+			'MONTH_COUNT': obj.get('MONTH_COUNT', ''),
+			'ERROR_MESSAGE': obj.get('ERROR_MESSAGE', '')
 		}
 
 		out_data.append(config)
