@@ -114,7 +114,7 @@ def create_excel_preference_file(in_filename):
 		'ROW_COUNT',
 		'ROW_MIN_DATE',
 		'ROW_MAX_DATE',
-		'ROW_MONTH_COUNT',
+		'MONTH_COUNT',
 		'ERROR_MESSAGE'
 	]
 
