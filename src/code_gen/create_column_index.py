@@ -12,10 +12,10 @@ def create_column_index(schema_name, table_name, column_name, row_count, row_min
 	sql = base_sql.replace('<SCHEMA_NAME>', schema_name)
 	sql = sql.replace('<TABLE_NAME>', table_name)
 	sql = sql.replace('<COLUMN_NAME>', column_name)
-	sql = sql.replace('<ROW_COUNT>', row_count)
-	sql = sql.replace('<ROW_MIN_DATE>', row_min_date)
-	sql = sql.replace('<ROW_MAX_DATE>', row_max_date)
-	sql = sql.replace('<MONTH_COUNT>', month_count)
+	sql = sql.replace('<ROW_COUNT>', str(row_count))
+	sql = sql.replace('<ROW_MIN_DATE>', str(row_min_date))
+	sql = sql.replace('<ROW_MAX_DATE>', str(row_max_date))
+	sql = sql.replace('<MONTH_COUNT>', str(month_count))
 
 	# Create the file and return its path
 	return src.utils.create_sql_file(
