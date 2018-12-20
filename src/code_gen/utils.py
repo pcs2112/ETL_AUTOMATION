@@ -57,7 +57,7 @@ def get_table_definition(table_definition):
 def get_column_names(table_definition):
 	columns = []
 	for key, column in table_definition.items():
-		columns.append(key)
+		columns.append(column['column_name'])
 
 	return columns
 
