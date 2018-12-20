@@ -75,11 +75,6 @@ def get_date_str(obj, datetime_format='%Y-%m-%d %H:%M:%S'):
 		return obj.strftime(datetime_format)
 	else:
 		return obj
-	
-	
-def get_filename_date_postfix():
-	""" Returns a timestamp string append to file names. """
-	return datetime.now().strftime('%Y%m%d_%H%M%S')
 
 
 def get_default_value(value, default):
@@ -91,3 +86,14 @@ def get_default_value(value, default):
 		return value
 	
 	return value
+
+
+def get_current_timestamp(format_str="%Y-%m-%d %H:%M"):
+	""" Returns the current timestamp using the specified date format. """
+	now = datetime.now()
+	return now.strftime(format_str)
+
+
+def get_filename_date_postfix():
+	""" Returns a timestamp string append to file names. """
+	return get_current_timestamp('%Y%m%d_%H%M%S')

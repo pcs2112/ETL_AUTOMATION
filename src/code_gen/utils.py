@@ -1,5 +1,4 @@
 import sys
-import datetime
 
 
 def set_nullable(column, parts):
@@ -69,11 +68,6 @@ def get_identity_column(table_definition):
 			return column
 
 	return None
-
-
-def get_current_timestamp(format_str="%Y-%m-%d %H:%M"):
-	now = datetime.datetime.now()
-	return now.strftime(format_str)
 
 
 def get_target_table_name(source_table_name, target_table_name):

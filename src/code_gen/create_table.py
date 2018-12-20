@@ -42,7 +42,7 @@ def create_table(config, table_definition):
 	)
 
 	# Set the date
-	sql = sql.replace('<DATE_CREATED>', src.code_gen.utils.get_current_timestamp())
+	sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
 
 	# Set the data partition name
 	if config['DATA_PARTITION_COLUMN'] == '':

@@ -94,7 +94,7 @@ def create_sp(config, table_definition):
 	sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
 	sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
 	sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
-	sql = sql.replace('<DATE_CREATED>', src.code_gen.utils.get_current_timestamp())
+	sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
 	sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
 
 	# Set the source table definition columns
