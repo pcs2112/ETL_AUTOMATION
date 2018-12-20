@@ -29,6 +29,8 @@ def create_column_indices(files):
 		with open(file) as fp:
 			contents += fp.read() + "\n\n\n"
 			
-		os.remove(file)
+	for file in files:
+		if os.path.exists(file):
+			os.remove(file)
 	
 	return src.utils.create_sql_file(f"C8_COLUMN_INDICES.sql", contents)
