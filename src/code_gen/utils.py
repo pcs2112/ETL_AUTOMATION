@@ -37,7 +37,7 @@ def get_table_definition(table_definition):
 	columns = []
 
 	for key, column in table_definition.items():
-		parts = [key]
+		parts = [column['column_name']]
 
 		try:
 			func = getattr(module, 'set_' + column['data_type'])
