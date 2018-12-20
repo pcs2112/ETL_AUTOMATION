@@ -70,7 +70,7 @@ def create_json_preference_files(file_name):
 	files = []
 	for config in data:
 		files.append(create_json_preference_file(
-			f"C8_{config['STORED_PROCEDURE_NAME']}.json",
+			f"C8_{config['STORED_PROCEDURE_SCHEMA']}.{config['STORED_PROCEDURE_NAME']}.json",
 			json.dumps(config, indent=4)
 		))
 
@@ -115,6 +115,7 @@ def create_excel_preference_file(in_filename):
 		'ROW_MIN_DATE',
 		'ROW_MAX_DATE',
 		'MONTH_COUNT',
+		'SP_C8_COMMAND',
 		'ERROR_MESSAGE'
 	]
 
@@ -196,6 +197,7 @@ def get_excel_preference_file_data(file_name):
 			'ROW_MIN_DATE': obj.get('ROW_MIN_DATE', ''),
 			'ROW_MAX_DATE': obj.get('ROW_MAX_DATE', ''),
 			'MONTH_COUNT': int(src.utils.get_default_value(obj.get('MONTH_COUNT', ''), '0')),
+			'SP_C8_COMMAND': obj.get('SP_C8_COMMAND', ''),
 			'ERROR_MESSAGE': obj.get('ERROR_MESSAGE', '')
 		}
 
@@ -298,6 +300,7 @@ def create_excel_preference_file_row(pref_config):
 		src.utils.get_date_str(counts['min_value']),
 		src.utils.get_date_str(counts['max_value']),
 		counts['month_cnt'],
+		f"python app.py create_sp C8_{pref_config['STORED_PROCEDURE_SCHEMA']}.{pref_config['STORED_PROCEDURE_NAME']}.json",
 		err
 	]
 
