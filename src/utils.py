@@ -80,3 +80,14 @@ def get_date_str(obj, datetime_format='%Y-%m-%d %H:%M:%S'):
 def get_filename_date_postfix():
 	""" Returns a timestamp string append to file names. """
 	return datetime.now().strftime('%Y%m%d_%H%M%S')
+
+
+def get_default_value(value, default):
+	""" Returns a default value if a value is empty. """
+	if isinstance(value, str):
+		if value.strip() == '':
+			return default
+		
+		return value
+	
+	return value

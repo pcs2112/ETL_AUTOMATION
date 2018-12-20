@@ -188,14 +188,14 @@ def get_excel_preference_file_data(file_name):
 			'STORED_PROCEDURE_SCHEMA': obj['STORED_PROCEDURE_SCHEMA'],
 			'STORED_PROCEDURE_NAME': sp_name,
 			'UPDATE_MATCH_CHECK_COLUMNS': src.utils.split_string(obj['UPDATE_MATCH_CHECK_COLUMNS'], '|'),
-			'MIN_CALL_DURATION_MINUTES': int(obj['MIN_CALL_DURATION_MINUTES']),
-			'MAX_CALL_DURATION_MINUTES': int(obj['MAX_CALL_DURATION_MINUTES']),
-			'ETL_PRIORITY': int(obj['ETL_PRIORITY']),
+			'MIN_CALL_DURATION_MINUTES': int(src.utils.get_default_value(obj.get('MIN_CALL_DURATION_MINUTES', ''), '0')),
+			'MAX_CALL_DURATION_MINUTES': int(src.utils.get_default_value(obj.get('MAX_CALL_DURATION_MINUTES', ''), '0')),
+			'ETL_PRIORITY': int(src.utils.get_default_value(obj.get('ETL_PRIORITY', ''), '0')),
 			'SOURCE_TYPE': obj['SOURCE_TYPE'],
-			'ROW_COUNT': obj.get('ROW_COUNT', ''),
+			'ROW_COUNT': int(src.utils.get_default_value(obj.get('ROW_COUNT', ''), '0')),
 			'ROW_MIN_DATE': obj.get('ROW_MIN_DATE', ''),
 			'ROW_MAX_DATE': obj.get('ROW_MAX_DATE', ''),
-			'MONTH_COUNT': obj.get('MONTH_COUNT', ''),
+			'MONTH_COUNT': int(src.utils.get_default_value(obj.get('MONTH_COUNT', ''), '0')),
 			'ERROR_MESSAGE': obj.get('ERROR_MESSAGE', '')
 		}
 
