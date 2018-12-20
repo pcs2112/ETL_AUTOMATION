@@ -1,5 +1,6 @@
 import os
 import json
+import ntpath
 import src.db_utils
 import src.code_gen.utils
 import src.excel_utils
@@ -16,7 +17,7 @@ def get_configuration_file_path(file_name):
 	:param str file_name:
 	:return: str
 	"""
-	file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], file_name)
+	file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], ntpath.basename(file_name))
 	if os.path.exists(file_path) is False:
 		raise FileExistsError(f"{file_name} is an invalid file.")
 
