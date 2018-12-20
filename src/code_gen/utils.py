@@ -29,7 +29,7 @@ def set_decimal(column, parts):
 
 
 def set_numeric(column, parts):
-	parts.append(f"[{column['data_type']}] ({column['precision']},{column['max_length']})")
+	parts.append(f"[{column['data_type']}] ({column['precision']},{column['scale']})")
 
 
 def get_table_definition(table_definition):
