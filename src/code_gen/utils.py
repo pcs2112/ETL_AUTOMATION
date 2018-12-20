@@ -30,6 +30,10 @@ def set_decimal(column, parts):
 
 def set_numeric(column, parts):
 	parts.append(f"[{column['data_type']}] ({column['precision']},{column['scale']})")
+	
+	
+def set_sysname(column, parts):
+	parts.append(f"[nvarchar(128)]")
 
 
 def get_table_definition(table_definition):
