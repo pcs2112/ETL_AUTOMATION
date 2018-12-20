@@ -3,17 +3,15 @@ import src.preference_file_utils
 import src.code_gen
 
 
-def bulk_create_json_preference_files(file_name):
-	json_files = src.preference_file_utils.create_json_preference_files(
-		src.preference_file_utils.get_configuration_file_path(file_name)
-	)
+def bulk_create_json_preference_files(in_filename):
+	filename = src.preference_file_utils.get_configuration_file_path(in_filename)
+	
+	json_files = src.preference_file_utils.create_json_preference_files(filename)
 	print('The following JSON preference files were created:')
 	for json_file in json_files:
 		print(json_file)
 	
-	data = src.preference_file_utils.get_excel_preference_file_data(
-		src.preference_file_utils.get_configuration_file_path(file_name)
-	)
+	data = src.preference_file_utils.get_excel_preference_file_data(filename)
 	index_sql_files = []
 	for config in data:
 		index_sql_files.append(src.code_gen.create_column_index(
