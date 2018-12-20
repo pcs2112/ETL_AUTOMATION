@@ -1,3 +1,4 @@
+import os
 import src.utils
 import src.code_gen.utils
 
@@ -27,5 +28,7 @@ def create_column_indices(files):
 	for file in files:
 		with open(file) as fp:
 			contents += fp.read() + "\n\n\n"
+			
+		os.remove(file)
 	
 	return src.utils.create_sql_file(f"C8_COLUMN_INDICES.sql", contents)
