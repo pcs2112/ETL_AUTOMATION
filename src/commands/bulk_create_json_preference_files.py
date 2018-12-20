@@ -1,3 +1,4 @@
+import ntpath
 import src.preference_file_utils
 import src.code_gen
 
@@ -25,6 +26,12 @@ def bulk_create_json_preference_files(file_name):
 			config['MONTH_COUNT']
 		))
 	
-	print("\n\n")
+	print("")
 	print('The following indices file was created:')
 	print(src.code_gen.create_column_indices(index_sql_files))
+	print("")
+	print('Run the following commands to generate the DDL files:')
+	for json_file in json_files:
+		print(f"python app.py create_sp {ntpath.basename(json_file)}")
+	
+	print("")

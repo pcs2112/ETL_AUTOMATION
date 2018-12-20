@@ -55,5 +55,7 @@ def create_sp(preference_filename=''):
 	create_sp_filename = src.code_gen.create_sp(pref_config, table_definition)
 	print('Please locate your DDL files at:')
 	print(f"Create table DDL -> {create_table_filename}")
+	print("")
 	print(f"Create stored procedure DDL -> {create_sp_filename}")
+	print("")
 	close()
