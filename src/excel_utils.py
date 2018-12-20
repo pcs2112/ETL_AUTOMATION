@@ -49,5 +49,8 @@ def write_workbook_data(filename, sheets, data):
 		for i, row in enumerate(data):
 			for x, cell in enumerate(row):
 				ws.write(i, x, cell)
-
+				
+				if i == 0:
+					ws.col(x).width = (len(row[x]) + 4) * 367
+			
 	wb.save(filename)
