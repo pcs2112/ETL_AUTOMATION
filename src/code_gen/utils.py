@@ -1,5 +1,4 @@
 import sys
-import datetime
 
 
 def set_nullable(column, parts):
@@ -29,7 +28,11 @@ def set_decimal(column, parts):
 
 
 def set_numeric(column, parts):
-	parts.append(f"[{column['data_type']}] ({column['precision']},{column['max_length']})")
+	parts.append(f"[{column['data_type']}] ({column['precision']},{column['scale']})")
+	
+	
+def set_sysname(column, parts):
+	parts.append(f"[nvarchar(128)]")
 
 
 def get_table_definition(table_definition):
@@ -37,7 +40,7 @@ def get_table_definition(table_definition):
 	columns = []
 
 	for key, column in table_definition.items():
-		parts = [key]
+		parts = [column['column_name']]
 
 		try:
 			func = getattr(module, 'set_' + column['data_type'])
@@ -54,7 +57,7 @@ def get_table_definition(table_definition):
 def get_column_names(table_definition):
 	columns = []
 	for key, column in table_definition.items():
-		columns.append(key)
+		columns.append(column['column_name'])
 
 	return columns
 
@@ -65,11 +68,6 @@ def get_identity_column(table_definition):
 			return column
 
 	return None
-
-
-def get_current_timestamp(format_str="%Y-%m-%d %H:%M"):
-	now = datetime.datetime.now()
-	return now.strftime(format_str)
 
 
 def get_target_table_name(source_table_name, target_table_name):

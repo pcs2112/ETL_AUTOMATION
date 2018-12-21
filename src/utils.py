@@ -1,4 +1,5 @@
 import os
+import ntpath
 from datetime import *
 from src.config import get_config
 
@@ -9,7 +10,7 @@ def get_base_sql_code(file_name):
 	:param str file_name:
 	:return: str
 	"""
-	file_path = os.path.join(get_config()['CODE_GENERATION_IN_DIR'], file_name)
+	file_path = os.path.join(get_config()['CODE_GENERATION_IN_DIR'], ntpath.basename(file_name))
 	with open(file_path) as fp:
 		contents = fp.read()
 
@@ -23,7 +24,7 @@ def create_sql_file(file_name, sql_contents):
 	:param str sql_contents: The file's SQL contents
 	:return: str New file path
 	"""
-	file_path = os.path.join(get_config()['ETL_CONFIG_OUT_DIR'], file_name)
+	file_path = os.path.join(get_config()['ETL_CONFIG_OUT_DIR'], ntpath.basename(file_name))
 	with open(file_path, "w+") as fp:
 		fp.write(sql_contents)
 
@@ -75,3 +76,25 @@ def get_date_str(obj, datetime_format='%Y-%m-%d %H:%M:%S'):
 		return obj.strftime(datetime_format)
 	else:
 		return obj
+
+
+def get_default_value(value, default):
+	""" Returns a default value if a value is empty. """
+	if isinstance(value, str):
+		if value.strip() == '':
+			return default
+		
+		return value
+	
+	return value
+
+
+def get_current_timestamp(format_str="%Y-%m-%d %H:%M"):
+	""" Returns the current timestamp using the specified date format. """
+	now = datetime.now()
+	return now.strftime(format_str)
+
+
+def get_filename_date_postfix():
+	""" Returns a timestamp string append to file names. """
+	return get_current_timestamp('%Y%m%d_%H%M%S')

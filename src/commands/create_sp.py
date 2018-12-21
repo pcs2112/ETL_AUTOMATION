@@ -63,4 +63,5 @@ def create_sp(preference_filename=''):
 	print('Please locate your DDL files at:')
 	print(f"Create table DDL -> {create_table_filename}")
 	print(f"Create stored procedure DDL -> {create_sp_filename}")
+	print("")
 	close()

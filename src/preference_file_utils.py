@@ -1,5 +1,6 @@
 import os
 import json
+import ntpath
 import src.db_utils
 import src.code_gen.utils
 import src.excel_utils
@@ -16,7 +17,7 @@ def get_configuration_file_path(file_name):
 	:param str file_name:
 	:return: str
 	"""
-	file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], file_name)
+	file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], ntpath.basename(file_name))
 	if os.path.exists(file_path) is False:
 		raise FileExistsError(f"{file_name} is an invalid file.")
 
@@ -70,7 +71,7 @@ def create_json_preference_files(file_name):
 	files = []
 	for config in data:
 		files.append(create_json_preference_file(
-			f"C8_{config['STORED_PROCEDURE_NAME']}.json",
+			f"C8_{config['STORED_PROCEDURE_SCHEMA']}.{config['STORED_PROCEDURE_NAME']}.json",
 			json.dumps(config, indent=4)
 		))
 
@@ -114,7 +115,8 @@ def create_excel_preference_file(in_filename):
 		'ROW_COUNT',
 		'ROW_MIN_DATE',
 		'ROW_MAX_DATE',
-		'ROW_MONTH_COUNT',
+		'MONTH_COUNT',
+		'SP_C8_COMMAND',
 		'ERROR_MESSAGE'
 	]
 
@@ -124,7 +126,7 @@ def create_excel_preference_file(in_filename):
 		rows.append(create_excel_preference_file_row(row))
 
 	out_filename, file_extension = os.path.splitext(in_filename)
-	out_filename = out_filename + '_final' + file_extension
+	out_filename = out_filename + '_' + src.utils.get_filename_date_postfix() + file_extension
 
 	src.excel_utils.write_workbook_data(out_filename, ['ETL_STORED_PROCEDURES'], rows)
 	return out_filename
@@ -188,10 +190,16 @@ def get_excel_preference_file_data(file_name):
 			'STORED_PROCEDURE_SCHEMA': obj['STORED_PROCEDURE_SCHEMA'],
 			'STORED_PROCEDURE_NAME': sp_name,
 			'UPDATE_MATCH_CHECK_COLUMNS': src.utils.split_string(obj['UPDATE_MATCH_CHECK_COLUMNS'], '|'),
-			'MIN_CALL_DURATION_MINUTES': int(obj['MIN_CALL_DURATION_MINUTES']),
-			'MAX_CALL_DURATION_MINUTES': int(obj['MAX_CALL_DURATION_MINUTES']),
-			'ETL_PRIORITY': int(obj['ETL_PRIORITY']),
-			'SOURCE_TYPE': obj['SOURCE_TYPE']
+			'MIN_CALL_DURATION_MINUTES': int(src.utils.get_default_value(obj.get('MIN_CALL_DURATION_MINUTES', ''), '0')),
+			'MAX_CALL_DURATION_MINUTES': int(src.utils.get_default_value(obj.get('MAX_CALL_DURATION_MINUTES', ''), '0')),
+			'ETL_PRIORITY': int(src.utils.get_default_value(obj.get('ETL_PRIORITY', ''), '0')),
+			'SOURCE_TYPE': obj['SOURCE_TYPE'],
+			'ROW_COUNT': int(src.utils.get_default_value(obj.get('ROW_COUNT', ''), '0')),
+			'ROW_MIN_DATE': obj.get('ROW_MIN_DATE', ''),
+			'ROW_MAX_DATE': obj.get('ROW_MAX_DATE', ''),
+			'MONTH_COUNT': int(src.utils.get_default_value(obj.get('MONTH_COUNT', ''), '0')),
+			'SP_C8_COMMAND': obj.get('SP_C8_COMMAND', ''),
+			'ERROR_MESSAGE': obj.get('ERROR_MESSAGE', '')
 		}
 
 		out_data.append(config)
@@ -293,6 +301,7 @@ def create_excel_preference_file_row(pref_config):
 		src.utils.get_date_str(counts['min_value']),
 		src.utils.get_date_str(counts['max_value']),
 		counts['month_cnt'],
+		f"python app.py create_sp C8_{pref_config['STORED_PROCEDURE_SCHEMA']}.{pref_config['STORED_PROCEDURE_NAME']}.json",
 		err
 	]
 
