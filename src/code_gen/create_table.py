@@ -9,6 +9,13 @@ def create_table(config, table_definition):
 	# Get the base sql for creating a table
 	base_sql = src.utils.get_base_sql_code(base_sql_file_name)
 
+	# Get the primary key
+	primary_key = config['SOURCE_TABLE_PRIMARY_KEY']
+	if primary_key == '':
+		identity_column = src.code_gen.utils.get_identity_column(table_definition)
+		if identity_column:
+			primary_key = identity_column['column_name']
+
 	# Set the columns
 	columns = src.code_gen.utils.get_table_definition(table_definition)
 	for column in config['TARGET_TABLE_EXTRA_COLUMNS']:
@@ -19,12 +26,8 @@ def create_table(config, table_definition):
 
 	# Set the key columns
 	key_columns = []
-	if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
-		key_columns = [f"{config['SOURCE_TABLE_PRIMARY_KEY']} ASC"]
-	else:
-		identity_column = src.code_gen.utils.get_identity_column(table_definition)
-		if identity_column:
-			key_columns = [f"{identity_column['column_name']} ASC"]
+	if primary_key != '':
+		key_columns = [f"{primary_key} ASC"]
 
 	if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
 		key_columns = key_columns + config['TARGET_TABLE_EXTRA_KEY_COLUMNS']
@@ -41,6 +44,12 @@ def create_table(config, table_definition):
 	sql = sql.replace(
 		'<TARGET_TABLE>', src.code_gen.utils.get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
 	)
+
+	# Set the PK
+	sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', primary_key)
+
+	# Set the search column
+	sql = sql.replace('<SOURCE_TABLE_SEARCH_COLUMN_NAME>', config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'])
 
 	# Set the date
 	sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
