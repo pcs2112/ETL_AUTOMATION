@@ -125,8 +125,14 @@ def create_excel_preference_file(in_filename):
 	for i, row in enumerate(data):
 		rows.append(create_excel_preference_file_row(row))
 
-	out_filename, file_extension = os.path.splitext(in_filename)
-	out_filename = out_filename + '_' + src.utils.get_filename_date_postfix() + file_extension
+	filename, file_extension = os.path.splitext(in_filename)
+	out_filename = filename + '_FINAL' + file_extension
+
+	# Move the existing file to the old directory
+	if os.path.exists(out_filename):
+		old_filename = ntpath.basename(filename)
+		old_filename_new_filename = old_filename + '_' + src.utils.get_filename_date_postfix() + file_extension
+		os.rename(out_filename, os.path.join(get_config()['ETL_CONFIG_IN_DIR'], 'old', old_filename_new_filename))
 
 	src.excel_utils.write_workbook_data(out_filename, ['ETL_STORED_PROCEDURES'], rows)
 	return out_filename
