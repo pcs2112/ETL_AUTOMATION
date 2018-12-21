@@ -4,6 +4,7 @@ import src.code_gen.utils
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'SP.sql'
+row_min_date = '2000-01-01'
 
 
 def get_insert_columns(table_definition, extra_columns):
@@ -65,7 +66,7 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
 	return " or \n".join([str(condition) for condition in conditions])
 
 
-def create_sp(config, table_definition, table_counts):
+def create_sp(config, table_definition, table_counts=None):
 	# Get the base sql for creating a table
 	sql = src.utils.get_base_sql_code(base_sql_file_name)
 
@@ -96,7 +97,12 @@ def create_sp(config, table_definition, table_counts):
 	sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
 	sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
 	sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
-	sql = sql.replace('<PERIOD_START_DATE>', src.utils.getable_counts['row_min_date'])
+
+	if table_counts is None:
+		table_counts['row_min_date'] = row_min_date
+
+	period_start_date = src.utils.get_default_value(table_counts['row_min_date'], row_min_date)
+	sql = sql.replace('<PERIOD_START_DATE>', period_start_date.split()[0])
 
 	# Set the source table definition columns
 	source_table_column_definition = src.code_gen.utils.get_table_definition(table_definition)
