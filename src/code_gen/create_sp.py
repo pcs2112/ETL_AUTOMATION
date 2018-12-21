@@ -1,10 +1,11 @@
 import src.utils
 import src.code_gen.utils
+from datetime import *
 
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'SP.sql'
-row_min_date = '2000-01-01'
+row_min_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
 
 
 def get_insert_columns(table_definition, extra_columns):
@@ -99,10 +100,10 @@ def create_sp(config, table_definition, table_counts=None):
 	sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
 
 	if table_counts is None:
-		table_counts['row_min_date'] = row_min_date
+		table_counts['min_value'] = row_min_date
 
-	period_start_date = src.utils.get_default_value(table_counts['row_min_date'], row_min_date)
-	sql = sql.replace('<PERIOD_START_DATE>', period_start_date.split()[0])
+	period_start_date = src.utils.get_default_value(table_counts['min_value'], row_min_date)
+	sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
 
 	# Set the source table definition columns
 	source_table_column_definition = src.code_gen.utils.get_table_definition(table_definition)
