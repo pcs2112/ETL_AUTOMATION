@@ -35,8 +35,9 @@ def create_table(config, table_definition):
 	key_columns_sql = ",\n".join(["\t\t" + str(key_column) for key_column in key_columns])
 	sql = sql.replace('<TARGET_TABLE_KEY_COLUMNS>', key_columns_sql)
 
-	# Set the target schema and target table
+	# Set the target schema, target database and target table
 	sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
+	sql = sql.replace('<TARGET_DATABASE>', config['TARGET_DATABASE'])
 	sql = sql.replace(
 		'<TARGET_TABLE>', src.code_gen.utils.get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
 	)

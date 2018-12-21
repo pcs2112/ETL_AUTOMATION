@@ -51,8 +51,15 @@ def create_sp(preference_filename=''):
 		close()
 		return
 
+	# Get table counts
+	table_counts = src.db_utils.get_record_counts(
+		pref_config['SOURCE_SCHEMA'],
+		pref_config['SOURCE_TABLE'],
+		pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
+	)
+
 	create_table_filename = src.code_gen.create_table(pref_config, table_definition)
-	create_sp_filename = src.code_gen.create_sp(pref_config, table_definition)
+	create_sp_filename = src.code_gen.create_sp(pref_config, table_definition, table_counts)
 	print('Please locate your DDL files at:')
 	print(f"Create table DDL -> {create_table_filename}")
 	print(f"Create stored procedure DDL -> {create_sp_filename}")

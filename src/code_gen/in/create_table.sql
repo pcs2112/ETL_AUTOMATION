@@ -6,6 +6,9 @@
 -- I.E SP Code
 -- SELECT TOP 100 * FROM <TARGET_SCHEMA>.<TARGET_TABLE> WITH(NOLOCK)
 
+USE <TARGET_DATABASE>
+GO
+
 /*
 IF EXISTS (SELECT * FROM sys.objects so JOIN  sys.schemas ss on (so.schema_id = ss.schema_id) WHERE so.type = 'U' AND so.name = '<TARGET_TABLE>' and ss.name = '<TARGET_SCHEMA>')
 	DROP TABLE <TARGET_SCHEMA>.<TARGET_TABLE>
