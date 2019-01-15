@@ -13,7 +13,7 @@ def read_workbook_columns(wb, sheet_index=0):
 	columns = []
 
 	for i in range(sheet.ncols):
-		columns.append(sheet.cell(0, i).value)
+		columns.append(sheet.cell(0, i).value.strip())
 
 	return columns
 
@@ -32,7 +32,7 @@ def read_workbook_data(wb, sheet_index=0):
 	for row in range(1, num_rows):
 		obj = {}
 		for col in range(num_columns):
-			obj[header_columns[col]] = sheet.cell(row, col).value
+			obj[header_columns[col]] = sheet.cell(row, col).value.strip()
 
 		data.append(obj)
 
@@ -49,8 +49,8 @@ def write_workbook_data(filename, sheets, data):
 		for i, row in enumerate(data):
 			for x, cell in enumerate(row):
 				ws.write(i, x, cell)
-				
+
 				if i == 0:
 					ws.col(x).width = (len(row[x]) + 4) * 367
-			
+
 	wb.save(filename)
