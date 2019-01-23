@@ -13,7 +13,10 @@ def read_workbook_columns(wb, sheet_index=0):
 	columns = []
 
 	for i in range(sheet.ncols):
-		columns.append(sheet.cell(0, i).value.strip())
+		value = sheet.cell_value(0, i)
+		if isinstance(value, str):
+			value = value.strip()
+		columns.append(value)
 
 	return columns
 
@@ -32,7 +35,10 @@ def read_workbook_data(wb, sheet_index=0):
 	for row in range(1, num_rows):
 		obj = {}
 		for col in range(num_columns):
-			obj[header_columns[col]] = sheet.cell(row, col).value.strip()
+			value = sheet.cell_value(row, col)
+			if isinstance(value, str):
+				value = value.strip()
+			obj[header_columns[col]] = value
 
 		data.append(obj)
 
