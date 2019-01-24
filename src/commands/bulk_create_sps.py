@@ -57,7 +57,7 @@ def create_sp(preference_filename):
 	table_definition = src.db_utils.get_table_definition(
 		pref_config['SOURCE_DATABASE'],
 		pref_config['SOURCE_TABLE'],
-		'' if pref_config['SOURCE_SERVER'] == 'localhost' else pref_config['SOURCE_SERVER'],
+		pref_config['SOURCE_SERVER'],
 		pref_config['SOURCE_EXCLUDED_COLUMNS']
 	)
 
@@ -94,19 +94,28 @@ def create_sp(preference_filename):
 	})
 
 	# Create the table
-	cursor = get_db().cursor()
 	with open(create_table_filename) as fp:
 		create_table_sql = fp.read()
-
-	cursor.execute(create_table_sql)
-	cursor.close()
+		
+	# Get create table sql parts
+	create_table_sql_parts = create_table_sql.split('GO -- delimiter')
+	if len(create_table_sql_parts) > 0:
+		for sql in create_table_sql_parts:
+			normalized_sql = sql.strip()
+			if normalized_sql != '':
+				with get_db().cursor() as cursor:
+					cursor.execute(normalized_sql)
 
 	# Create the SP
-	cursor = get_db().cursor()
 	with open(create_sp_filename) as fp:
 		create_sp_sql = fp.read()
-
-	cursor.execute(create_sp_sql)
-	cursor.close()
+		
+	create_sp_sql_parts = create_sp_sql.split('GO -- delimiter')
+	if len(create_sp_sql_parts) > 0:
+		for sql in create_sp_sql_parts:
+			normalized_sql = sql.strip()
+			if normalized_sql != '':
+				with get_db().cursor() as cursor:
+					cursor.execute(normalized_sql)
 
 	close()
