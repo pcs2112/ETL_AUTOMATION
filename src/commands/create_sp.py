@@ -8,13 +8,13 @@ from src.exceptions import SearchColumnNoIndex
 
 def create_sp(preference_filename=''):
 	if preference_filename == '':
-		print('Please specify a valid preference file name.')
+		src.utils.print_red('Please specify a valid preference file name.')
 		return
 
 	try:
 		pref_config = src.preference_file_utils.get_configuration_from_preference_file(preference_filename)
 	except FileExistsError as e:
-		print(str(e))
+		src.utils.print_red(str(e))
 		return
 
 	# Init DB connection for the source DB
@@ -43,8 +43,8 @@ def create_sp(preference_filename=''):
 	except SearchColumnNoIndex:
 		pass
 	except Exception as e:
-		print(f"Error on {preference_filename}:")
-		print(str(e))
+		src.utils.print_red(f"Error on {preference_filename}:")
+		src.utils.print_red(str(e))
 		close()
 		return
 
@@ -57,8 +57,8 @@ def create_sp(preference_filename=''):
 
 	create_table_filename = src.code_gen.create_table(pref_config, table_definition)
 	create_sp_filename = src.code_gen.create_sp(pref_config, table_definition, table_counts)
-	print('Please locate your DDL files at:')
-	print(f"Create table DDL -> {create_table_filename}")
-	print(f"Create stored procedure DDL -> {create_sp_filename}")
+	src.utils.print_green('Please locate your DDL files at:')
+	src.utils.print_yellow(f"Create table DDL -> {create_table_filename}")
+	src.utils.print_yellow(f"Create stored procedure DDL -> {create_sp_filename}")
 	print("")
 	close()

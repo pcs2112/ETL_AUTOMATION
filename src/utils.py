@@ -83,9 +83,9 @@ def get_default_value(value, default):
 	if isinstance(value, str):
 		if value.strip() == '':
 			return default
-		
+
 		return value
-	
+
 	return value
 
 
@@ -98,3 +98,15 @@ def get_current_timestamp(format_str="%Y-%m-%d %H:%M"):
 def get_filename_date_postfix():
 	""" Returns a timestamp string append to file names. """
 	return get_current_timestamp('%Y%m%d_%H%M%S')
+
+
+def print_red(value):
+	print("\033[91m{}\033[00m" .format(value))
+
+
+def print_green(value):
+	print("\033[92m{}\033[00m" .format(value))
+
+
+def print_yellow(value):
+	print("\033[93m{}\033[00m" .format(value))

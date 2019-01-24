@@ -1,6 +1,7 @@
 import src.preference_file_utils
 import src.code_gen
 import src.db_utils
+import src.utils
 from src.mssql_connection import init_db, get_db, close
 from src.exceptions import SearchColumnNoIndex
 
@@ -23,24 +24,28 @@ def bulk_create_sps(in_filename):
 		))
 
 	print("")
-	print('The following indices file was created:')
-	print(src.code_gen.create_column_indices(index_sql_files))
+	src.utils.print_green('The following indices file was created:')
+	src.utils.print_yellow(src.code_gen.create_column_indices(index_sql_files))
 	print("")
 
 	# Get the JSON preference files
 	json_files = src.preference_file_utils.create_json_preference_files(filename)
 	for json_file in json_files:
 		print("")
-		print(f'creating stored procedure using {json_file}')
-		create_sp(json_file)
-		print(f'finished stored procedure using {json_file}')
+		src.utils.print_green(f'Running {json_file}')
+		try:
+			create_sp(json_file)
+		except Exception as e:
+			pass
+
+		src.utils.print_green(f'finished running {json_file}')
 
 
 def create_sp(preference_filename):
 	try:
 		pref_config = src.preference_file_utils.get_configuration_from_preference_file(preference_filename)
 	except FileExistsError as e:
-		print(str(e))
+		src.utils.print_red(str(e))
 		raise e
 
 	# Init DB connection in the source DB
@@ -67,8 +72,8 @@ def create_sp(preference_filename):
 	except SearchColumnNoIndex:
 		pass
 	except Exception as e:
-		print(f"Error on {preference_filename}:")
-		print(str(e))
+		src.utils.print_red(f"Error on {preference_filename}:")
+		src.utils.print_red(str(e))
 		close()
 		raise e
 
@@ -105,7 +110,12 @@ def create_sp(preference_filename):
 			normalized_sql = sql.strip()
 			if normalized_sql != '':
 				with get_db().cursor() as cursor:
-					cursor.execute(normalized_sql)
+					try:
+						cursor.execute(normalized_sql)
+					except Exception as e:
+						src.utils.print_red(f"Error on create table for file {create_table_filename}: ")
+						src.utils.print_red(str(e))
+						raise e
 
 	# Create the SP
 	with open(create_sp_filename) as fp:
@@ -117,6 +127,11 @@ def create_sp(preference_filename):
 			normalized_sql = sql.strip()
 			if normalized_sql != '':
 				with get_db().cursor() as cursor:
-					cursor.execute(normalized_sql)
+					try:
+						cursor.execute(normalized_sql)
+					except Exception as e:
+						src.utils.print_red(f"Error on create sp for file {create_sp_filename}: ")
+						src.utils.print_red(str(e))
+						raise e
 
 	close()
