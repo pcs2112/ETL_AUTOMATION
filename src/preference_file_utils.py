@@ -234,10 +234,10 @@ def create_excel_preference_file_row(pref_config):
 	db_config = {
 		'DB_SERVER': pref_config['SOURCE_SERVER'],
 		'DB_NAME': pref_config['SOURCE_DATABASE'],
-		'DB_USER': '',
-		'DB_PASSWORD': '',
-		'DB_DRIVER': 'SQL Server',
-		'DB_TRUSTED_CONNECTION': 1
+		'DB_USER': pref_config['SOURCE_USER'],
+		'DB_PASSWORD': pref_config['SOURCE_PASSWORD'],
+		'DB_DRIVER': pref_config['SOURCE_DRIVER'],
+		'DB_TRUSTED_CONNECTION': pref_config['SOURCE_TRUSTED_CONNECTION']
 	}
 
 	init_db(db_config)

@@ -11,7 +11,7 @@ def get_table_definition(db_name, table_name, server_name, excluded_columns=()):
 	:param list excluded_columns: Columns to exclude
 	:return list
 	"""
-	server_name = '' if server_name == 'localhost' else server_name
+	server_name = '' if server_name == '127.0.0.1' or server_name == 'localhost' else server_name
 	server_name = f'[{server_name}].' if server_name else ''
 
 	sql = ("SELECT T.name AS TABLE_NAME, C.name AS COLUMN_NAME, P.name AS DATA_TYPE, "

@@ -33,7 +33,7 @@ def create_sp(preference_filename=''):
 	table_definition = src.db_utils.get_table_definition(
 		pref_config['SOURCE_DATABASE'],
 		pref_config['SOURCE_TABLE'],
-		'' if pref_config['SOURCE_SERVER'] == 'localhost' else pref_config['SOURCE_SERVER'],
+		pref_config['SOURCE_SERVER'],
 		pref_config['SOURCE_EXCLUDED_COLUMNS']
 	)
 
