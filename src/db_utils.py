@@ -2,10 +2,11 @@ from src.config import get_config
 from src.mssql_connection import fetch_row, fetch_rows
 
 
-def get_table_definition(db_name, table_name, server_name, excluded_columns=()):
+def get_table_definition(db_name, schema_name, table_name, server_name, excluded_columns=()):
 	"""
 	Returns the table definition.
 	:param str db_name: Database name
+	:param str schema_name: Schema name
 	:param str table_name: Database table name
 	:param str server_name: Server name
 	:param list excluded_columns: Columns to exclude
@@ -17,10 +18,12 @@ def get_table_definition(db_name, table_name, server_name, excluded_columns=()):
 	sql = ("SELECT T.name AS TABLE_NAME, C.name AS COLUMN_NAME, P.name AS DATA_TYPE, "
 			"P.max_length AS SIZE, CAST(P.precision AS VARCHAR) + '/' + CAST(P.scale AS VARCHAR) AS PRECISION_SCALE, "
 			"c.* FROM {0}[{1}].sys.objects AS T JOIN {0}[{1}].sys.columns AS C ON T.object_id = C.object_id "
-			"JOIN {0}[{1}].sys.types AS P ON C.system_type_id = P.system_type_id WHERE  T.type_desc = 'USER_TABLE' "
-			"and T.name = ? and P.name != 'timestamp' order by column_id asc").format(server_name, db_name, table_name)
+			"JOIN {0}[{1}].sys.types AS P ON C.system_type_id = P.system_type_id "
+			"JOIN sys.schemas ss ON (T.schema_id = ss.schema_id) "
+		   	" WHERE  T.type_desc = 'USER_TABLE' and ss.name = ? "
+			"and T.name = ? and P.name != 'timestamp' order by column_id asc").format(server_name, db_name)
 
-	columns = fetch_rows(sql, [table_name])
+	columns = fetch_rows(sql, [schema_name, table_name])
 
 	default_columns = {
 		'ID': 1,

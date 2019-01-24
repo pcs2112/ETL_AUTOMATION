@@ -56,6 +56,7 @@ def create_sp(preference_filename):
 	# Get the table definition from the specified config
 	table_definition = src.db_utils.get_table_definition(
 		pref_config['SOURCE_DATABASE'],
+		pref_config['SOURCE_SCHEMA'],
 		pref_config['SOURCE_TABLE'],
 		pref_config['SOURCE_SERVER'],
 		pref_config['SOURCE_EXCLUDED_COLUMNS']
@@ -96,7 +97,7 @@ def create_sp(preference_filename):
 	# Create the table
 	with open(create_table_filename) as fp:
 		create_table_sql = fp.read()
-		
+
 	# Get create table sql parts
 	create_table_sql_parts = create_table_sql.split('GO -- delimiter')
 	if len(create_table_sql_parts) > 0:
@@ -109,7 +110,7 @@ def create_sp(preference_filename):
 	# Create the SP
 	with open(create_sp_filename) as fp:
 		create_sp_sql = fp.read()
-		
+
 	create_sp_sql_parts = create_sp_sql.split('GO -- delimiter')
 	if len(create_sp_sql_parts) > 0:
 		for sql in create_sp_sql_parts:
