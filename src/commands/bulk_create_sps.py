@@ -58,13 +58,17 @@ def create_sp(preference_filename):
 	})
 
 	# Get the table definition from the specified config
-	table_definition = src.db_utils.get_table_definition(
-		pref_config['SOURCE_DATABASE'],
-		pref_config['SOURCE_SCHEMA'],
-		pref_config['SOURCE_TABLE'],
-		pref_config['SOURCE_SERVER'],
-		pref_config['SOURCE_EXCLUDED_COLUMNS']
-	)
+	try:
+		table_definition = src.db_utils.get_table_definition(
+			pref_config['SOURCE_DATABASE'],
+			pref_config['SOURCE_SCHEMA'],
+			pref_config['SOURCE_TABLE'],
+			pref_config['SOURCE_SERVER'],
+			pref_config['SOURCE_EXCLUDED_COLUMNS']
+		)
+	except Exception as e:
+		print(str(e))
+		raise e
 
 	try:
 		src.preference_file_utils.validate_preference_file_config(pref_config, table_definition)
