@@ -1,3 +1,4 @@
 from src.commands.bulk_create_json_preference_files import bulk_create_json_preference_files
+from src.commands.bulk_create_sps import bulk_create_sps
 from src.commands.create_excel_preference_file import create_excel_preference_file
 from src.commands.create_sp import create_sp

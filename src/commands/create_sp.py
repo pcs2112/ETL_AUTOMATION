@@ -2,7 +2,6 @@ import src.preference_file_utils
 import src.db_utils
 import src.code_gen.utils
 import src.utils
-from src.config import get_config
 from src.mssql_connection import init_db, close
 from src.exceptions import SearchColumnNoIndex
 
@@ -18,18 +17,15 @@ def create_sp(preference_filename=''):
 		print(str(e))
 		return
 
-	# Init DB connection using the preference file
-	if pref_config['SOURCE_SERVER'] == 'localhost':
-		db_config = get_config()
-	else:
-		db_config = {
-			'DB_SERVER': pref_config['SOURCE_SERVER'],
-			'DB_NAME': pref_config['SOURCE_DATABASE'],
-			'DB_USER': '',
-			'DB_PASSWORD': '',
-			'DB_DRIVER': 'SQL Server',
-			'DB_TRUSTED_CONNECTION': 1
-		}
+	# Init DB connection for the source DB
+	db_config = {
+		'DB_SERVER': pref_config['SOURCE_SERVER'],
+		'DB_NAME': pref_config['SOURCE_DATABASE'],
+		'DB_USER': pref_config['SOURCE_USER'],
+		'DB_PASSWORD': pref_config['SOURCE_PASSWORD'],
+		'DB_DRIVER': pref_config['SOURCE_DRIVER'],
+		'DB_TRUSTED_CONNECTION': pref_config['SOURCE_TRUSTED_CONNECTION']
+	}
 
 	init_db(db_config)
 
