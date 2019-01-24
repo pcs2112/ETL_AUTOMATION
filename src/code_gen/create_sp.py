@@ -11,7 +11,7 @@ row_min_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
 def get_insert_columns(table_definition, extra_columns):
 	insert_columns = []
 	for key, column in table_definition.items():
-		insert_columns.append(f"{column['column_name']}")
+		insert_columns.append(f"{column['target_table_column_name']}")
 
 	for column in extra_columns:
 		insert_columns.append(f"{column['column_name']}")
@@ -22,7 +22,7 @@ def get_insert_columns(table_definition, extra_columns):
 def get_update_values(table_definition, extra_columns):
 	update_values = []
 	for key, column in table_definition.items():
-		update_values.append(f"{column['column_name']} = source.{column['column_name']}")
+		update_values.append(f"{column['target_table_column_name']} = source.{column['target_table_column_name']}")
 
 	for column in extra_columns:
 		update_values.append(f"{column['column_name']} = {column['value']}")
@@ -33,7 +33,7 @@ def get_update_values(table_definition, extra_columns):
 def get_insert_values(table_definition, extra_columns):
 	insert_values = []
 	for key, column in table_definition.items():
-		insert_values.append(f"source.{column['column_name']}")
+		insert_values.append(f"source.{column['target_table_column_name']}")
 
 	for column in extra_columns:
 		insert_values.append(f"{column['value']}")
@@ -58,11 +58,11 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
 		if column['column_name'] in match_check_columns:
 			if column['is_nullable'] == 1:
 				conditions.append(
-					f"(target.{column['column_name']} is NULL and source.{column['column_name']} is NOT NULL)")
+					f"(target.{column['target_table_column_name']} is NULL and source.{column['target_table_column_name']} is NOT NULL)")
 				conditions.append(
-					f"(target.{column['column_name']} is NOT NULL and source.{column['column_name']} is NULL)")
+					f"(target.{column['target_table_column_name']} is NOT NULL and source.{column['target_table_column_name']} is NULL)")
 
-			conditions.append(f"target.{column['column_name']} != source.{column['column_name']}")
+			conditions.append(f"target.{column['target_table_column_name']} != source.{column['target_table_column_name']}")
 
 	return " or \n".join([str(condition) for condition in conditions])
 
@@ -83,6 +83,11 @@ def create_sp(config, table_definition, table_counts=None):
 		'<STORED_PROCEDURE_NAME>', src.code_gen.utils.get_sp_name(target_table, config['STORED_PROCEDURE_NAME'])
 	)
 	sql = sql.replace('<SOURCE_SERVER>', config['SOURCE_SERVER'])
+	if config['SOURCE_SERVER'] != 'localhost' and config['SOURCE_SERVER'] != '127.0.0.1':
+		sql = sql.replace('<SOURCE_SERVER_SELECT>', f"[{config['SOURCE_SERVER']}].")
+	else:
+		sql = sql.replace('<SOURCE_SERVER_SELECT>', '')
+
 	sql = sql.replace('<SOURCE_DATABASE>', config['SOURCE_DATABASE'])
 	sql = sql.replace('<SOURCE_SCHEMA>', config['SOURCE_SCHEMA'])
 	sql = sql.replace('<SOURCE_TABLE>', config['SOURCE_TABLE'])
@@ -104,23 +109,38 @@ def create_sp(config, table_definition, table_counts=None):
 
 	period_start_date = src.utils.get_default_value(table_counts['min_value'], row_min_date)
 	sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
-
+	
+	# Set the target table definition columns
+	target_table_column_definition = src.code_gen.utils.get_target_table_definition(table_definition)
+	target_table_column_definition_sql = ",\n".join(["\t\t" + str(column) for column in target_table_column_definition])
+	sql = sql.replace('<TARGET_TABLE_COLUMN_DEFINITION>', target_table_column_definition_sql)
+	
 	# Set the source table definition columns
-	source_table_column_definition = src.code_gen.utils.get_table_definition(table_definition)
+	source_table_column_definition = src.code_gen.utils.get_source_table_definition(table_definition)
 	source_table_column_definition_sql = ",\n".join(["\t\t" + str(column) for column in source_table_column_definition])
 	sql = sql.replace('<SOURCE_TABLE_COLUMN_DEFINITION>', source_table_column_definition_sql)
-
+	
+	# Set the target table column names TARGET_TABLE_COLUMN_NAMES
+	target_table_column_names = src.code_gen.utils.get_target_table_column_names(table_definition)
+	target_table_column_names_sql = ",\n".join(["\t\t" + str(column) for column in target_table_column_names])
+	sql = sql.replace('<TARGET_TABLE_COLUMN_NAMES>', target_table_column_names_sql)
+	
 	# Set the source table column names
-	source_table_column_names = src.code_gen.utils.get_column_names(table_definition)
+	source_table_column_names = src.code_gen.utils.get_source_table_column_names(table_definition)
 	source_table_column_names_sql = ",\n".join(["\t\t" + str(column) for column in source_table_column_names])
 	sql = sql.replace('<SOURCE_TABLE_COLUMN_NAMES>', source_table_column_names_sql)
+	
+	# Set the target table column names
+	target_table_column_names = src.code_gen.utils.get_target_table_column_names(table_definition)
+	target_table_column_names_sql = ",\n".join(["\t\t" + str(column) for column in target_table_column_names])
+	sql = sql.replace('<TARGET_TABLE_COLUMN_NAMES>', target_table_column_names_sql)
 
 	# Set the identity column
 	if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
-		sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', config['SOURCE_TABLE_PRIMARY_KEY'])
+		sql = sql.replace('<TARGET_TABLE_PRIMARY_KEY>', config['SOURCE_TABLE_PRIMARY_KEY'])
 	else:
 		identity_column = src.code_gen.utils.get_identity_column(table_definition)
-		sql = sql.replace('<SOURCE_TABLE_PRIMARY_KEY>', identity_column['column_name'])
+		sql = sql.replace('<TARGET_TABLE_PRIMARY_KEY>', identity_column['target_table_column_name'])
 
 	# Set the target table update columns and values
 	target_table_update_values = get_update_values(table_definition, config['TARGET_TABLE_EXTRA_COLUMNS'])

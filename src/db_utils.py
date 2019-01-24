@@ -36,9 +36,9 @@ def get_table_definition(db_name, table_name, server_name, excluded_columns=()):
 
 	for column in columns:
 		if column['column_name'].upper() in default_columns:
-			column['source_table_column_name'] = target_table_column_prefix + column['column_name']
+			column['target_table_column_name'] = target_table_column_prefix + column['column_name']
 		else:
-			column['source_table_column_name'] = column['column_name']
+			column['target_table_column_name'] = column['column_name']
 
 		out_columns[column['column_name'].upper()] = column
 

@@ -54,12 +54,58 @@ def get_table_definition(table_definition):
 	return columns
 
 
-def get_column_names(table_definition):
+def get_source_table_definition(table_definition):
+	module = sys.modules[__name__]
 	columns = []
+
 	for key, column in table_definition.items():
-		columns.append(column['column_name'])
+		parts = [column['column_name']]
+
+		try:
+			func = getattr(module, 'set_' + column['data_type'])
+			func(column, parts)
+		except:
+			set_data_type(column, parts)
+
+		set_nullable(column, parts)
+		columns.append(' '.join([str(part) for part in parts]))
 
 	return columns
+
+
+def get_target_table_definition(table_definition):
+	module = sys.modules[__name__]
+	columns = []
+
+	for key, column in table_definition.items():
+		parts = [column['target_table_column_name']]
+
+		try:
+			func = getattr(module, 'set_' + column['data_type'])
+			func(column, parts)
+		except:
+			set_data_type(column, parts)
+
+		set_nullable(column, parts)
+		columns.append(' '.join([str(part) for part in parts]))
+
+	return columns
+
+
+def get_column_names(table_definition, column_field_name):
+	columns = []
+	for key, column in table_definition.items():
+		columns.append(column[column_field_name])
+
+	return columns
+
+
+def get_source_table_column_names(table_definition):
+	return get_column_names(table_definition, 'column_name')
+
+
+def get_target_table_column_names(table_definition):
+	return get_column_names(table_definition, 'target_table_column_name')
 
 
 def get_identity_column(table_definition):

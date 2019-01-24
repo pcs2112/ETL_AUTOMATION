@@ -14,10 +14,10 @@ def create_table(config, table_definition):
 	if primary_key == '':
 		identity_column = src.code_gen.utils.get_identity_column(table_definition)
 		if identity_column:
-			primary_key = identity_column['column_name']
+			primary_key = identity_column['target_table_column_name']
 
 	# Set the columns
-	columns = src.code_gen.utils.get_table_definition(table_definition)
+	columns = src.code_gen.utils.get_target_table_definition(table_definition)
 	for column in config['TARGET_TABLE_EXTRA_COLUMNS']:
 		columns.append(f"{column['column_name']} {column['data_type']}")
 
