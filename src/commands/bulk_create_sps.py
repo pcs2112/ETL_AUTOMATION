@@ -1,3 +1,4 @@
+import sys, traceback
 import src.preference_file_utils
 import src.code_gen
 import src.db_utils
@@ -31,21 +32,21 @@ def bulk_create_sps(in_filename):
 	json_files = src.preference_file_utils.create_json_preference_files(filename)
 	for json_file in json_files:
 		print("")
-		print(f'Running {json_file}')
+		print(f'Executing {json_file}...')
 		try:
 			create_sp(json_file)
 		except Exception as e:
+			close()
+			print('Exception:')
+			traceback.print_exc(file=sys.stdout)
 			pass
 
-		print(f'finished running {json_file}')
+		print(f'finished executing {json_file}.')
+		print("")
 
 
 def create_sp(preference_filename):
-	try:
-		pref_config = src.preference_file_utils.get_configuration_from_preference_file(preference_filename)
-	except FileExistsError as e:
-		print(str(e))
-		raise e
+	pref_config = src.preference_file_utils.get_configuration_from_preference_file(preference_filename)
 
 	# Init DB connection in the source DB
 	init_db({
@@ -58,26 +59,19 @@ def create_sp(preference_filename):
 	})
 
 	# Get the table definition from the specified config
-	try:
-		table_definition = src.db_utils.get_table_definition(
-			pref_config['SOURCE_DATABASE'],
-			pref_config['SOURCE_SCHEMA'],
-			pref_config['SOURCE_TABLE'],
-			pref_config['SOURCE_SERVER'],
-			pref_config['SOURCE_EXCLUDED_COLUMNS']
-		)
-	except Exception as e:
-		print(str(e))
-		raise e
+	table_definition = src.db_utils.get_table_definition(
+		pref_config['SOURCE_DATABASE'],
+		pref_config['SOURCE_SCHEMA'],
+		pref_config['SOURCE_TABLE'],
+		pref_config['SOURCE_SERVER'],
+		pref_config['SOURCE_EXCLUDED_COLUMNS']
+	)
 
 	try:
 		src.preference_file_utils.validate_preference_file_config(pref_config, table_definition)
 	except SearchColumnNoIndex:
 		pass
 	except Exception as e:
-		print(f"Error on {preference_filename}:")
-		print(str(e))
-		close()
 		raise e
 
 	# Get table counts
@@ -109,15 +103,14 @@ def create_sp(preference_filename):
 	# Get create table sql parts
 	create_table_sql_parts = create_table_sql.split('GO -- delimiter')
 	if len(create_table_sql_parts) > 0:
-		for sql in create_table_sql_parts:
+		for i, sql in enumerate(create_table_sql_parts):
 			normalized_sql = sql.strip()
-			if normalized_sql != '':
+			if i > 0 and normalized_sql != '':
 				with get_db().cursor() as cursor:
 					try:
 						cursor.execute(normalized_sql)
 					except Exception as e:
-						print(f"Error on create table for file {create_table_filename}: ")
-						print(str(e))
+						print(f"Error on create table for file {create_table_filename}.")
 						raise e
 
 	# Create the SP
@@ -126,15 +119,14 @@ def create_sp(preference_filename):
 
 	create_sp_sql_parts = create_sp_sql.split('GO -- delimiter')
 	if len(create_sp_sql_parts) > 0:
-		for sql in create_sp_sql_parts:
+		for i, sql in enumerate(create_sp_sql_parts):
 			normalized_sql = sql.strip()
-			if normalized_sql != '':
+			if i > 0 and normalized_sql != '':
 				with get_db().cursor() as cursor:
 					try:
 						cursor.execute(normalized_sql)
 					except Exception as e:
-						print(f"Error on create sp for file {create_sp_filename}: ")
-						print(str(e))
+						print(f"Error on create sp for file {create_sp_filename}.")
 						raise e
 
 	close()
