@@ -2,6 +2,16 @@ from src.config import get_config
 from src.mssql_connection import fetch_row, fetch_rows
 
 
+def get_table_exists(schema_name, table_name):
+	""" Checks a table exits. """
+	sql = ("SELECT * FROM sys.objects so JOIN sys.schemas ss on (so.schema_id = ss.schema_id) "
+		   "WHERE so.type = 'U' AND so.name = ? and ss.name = ?")
+
+	row = fetch_row(sql, [table_name, schema_name])
+
+	return True if row else False
+
+
 def get_table_definition(db_name, schema_name, table_name, server_name, excluded_columns=()):
 	"""
 	Returns the table definition.
