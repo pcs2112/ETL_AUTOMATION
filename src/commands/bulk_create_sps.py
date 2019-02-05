@@ -1,6 +1,7 @@
 import sys, traceback
 import src.preference_file_utils
 import src.code_gen
+import src.code_gen.utils
 import src.db_utils
 from src.mssql_connection import init_db, get_db, close
 from src.exceptions import SearchColumnNoIndex
@@ -97,21 +98,26 @@ def create_sp(preference_filename):
 	})
 
 	# Create the table
-	with open(create_table_filename) as fp:
-		create_table_sql = fp.read()
+	if pref_config['TARGET_TABLE_EXISTS'] and not pref_config['TARGET_TABLE_RECREATE']:
+		print(f"{pref_config['TARGET_TABLE']} table exists.")
+	else:
+		with open(create_table_filename) as fp:
+			create_table_sql = fp.read()
 
-	# Get create table sql parts
-	create_table_sql_parts = create_table_sql.split('GO -- delimiter')
-	if len(create_table_sql_parts) > 0:
-		for i, sql in enumerate(create_table_sql_parts):
-			normalized_sql = sql.strip()
-			if i > 0 and normalized_sql != '':
-				with get_db().cursor() as cursor:
-					try:
-						cursor.execute(normalized_sql)
-					except Exception as e:
-						print(f"Error on create table for file {create_table_filename}.")
-						raise e
+		# Get create table sql parts
+		create_table_sql_parts = create_table_sql.split('GO -- delimiter')
+		if len(create_table_sql_parts) > 0:
+			for i, sql in enumerate(create_table_sql_parts):
+				normalized_sql = sql.strip()
+				if i > 0 and normalized_sql != '':
+					with get_db().cursor() as cursor:
+						try:
+							cursor.execute(normalized_sql)
+						except Exception as e:
+							print(f"Error on create table for file {create_table_filename}.")
+							raise e
+
+		print(f"{pref_config['TARGET_TABLE']} table created.")
 
 	# Create the SP
 	with open(create_sp_filename) as fp:
@@ -128,5 +134,7 @@ def create_sp(preference_filename):
 					except Exception as e:
 						print(f"Error on create sp for file {create_sp_filename}.")
 						raise e
+
+		print(f"{src.code_gen.utils.get_sp_name(pref_config['TARGET_TABLE'], pref_config['STORED_PROCEDURE_NAME'])} stored procedure created.")
 
 	close()

@@ -107,6 +107,9 @@ def create_excel_preference_file(in_filename):
 		'TARGET_TABLE',
 		'TARGET_TABLE_EXTRA_KEY_COLUMNS',
 		'TARGET_TABLE_EXTRA_COLUMNS',
+		'TARGET_TABLE_EXISTS',
+		'TARGET_TABLE_ROW_COUNT',
+		'TARGET_TABLE_RECREATE',
 		'DATA_PARTITION_FUNCTION',
 		'DATA_PARTITION_COLUMN',
 		'INDEX_PARTITION_FUNCTION',
@@ -178,6 +181,8 @@ def get_excel_preference_file_data(file_name):
 					'value': props[2]
 				})
 
+		target_table_exists = src.utils.get_default_value(obj.get('TARGET_TABLE_EXISTS', ''), 'false') == 'true'
+
 		config = {
 			'SOURCE_SERVER': obj['SOURCE_SERVER'],
 			'SOURCE_DATABASE': obj['SOURCE_DATABASE'],
@@ -205,6 +210,9 @@ def get_excel_preference_file_data(file_name):
 			'TARGET_TABLE': target_table,
 			'TARGET_TABLE_EXTRA_KEY_COLUMNS': src.utils.split_string(obj['TARGET_TABLE_EXTRA_KEY_COLUMNS'], '|'),
 			'TARGET_TABLE_EXTRA_COLUMNS': target_table_extra_cols,
+			'TARGET_TABLE_EXISTS': target_table_exists,
+			'TARGET_TABLE_ROW_COUNT': int(src.utils.get_default_value(obj.get('TARGET_TABLE_ROW_COUNT', ''), '0')),
+			'TARGET_TABLE_RECREATE': int(src.utils.get_default_value(obj.get('TARGET_TABLE_RECREATE', ''), '0' if target_table_exists else '1')),
 			'DATA_PARTITION_FUNCTION': obj['DATA_PARTITION_FUNCTION'],
 			'DATA_PARTITION_COLUMN': obj['DATA_PARTITION_COLUMN'],
 			'INDEX_PARTITION_FUNCTION': obj['INDEX_PARTITION_FUNCTION'],
@@ -231,18 +239,17 @@ def get_excel_preference_file_data(file_name):
 
 def create_excel_preference_file_row(pref_config):
 	""" Uses the specified preference config to create a row of data for the excel file. """
-	db_config = {
+
+	# Get the source table information
+	init_db({
 		'DB_SERVER': pref_config['SOURCE_SERVER'],
 		'DB_NAME': pref_config['SOURCE_DATABASE'],
 		'DB_USER': pref_config['SOURCE_USER'],
 		'DB_PASSWORD': pref_config['SOURCE_PASSWORD'],
 		'DB_DRIVER': pref_config['SOURCE_DRIVER'],
 		'DB_TRUSTED_CONNECTION': pref_config['SOURCE_TRUSTED_CONNECTION']
-	}
+	})
 
-	init_db(db_config)
-
-	# Get the table definition from the specified config
 	err = ''
 	search_column_name = ''
 	if 'column_name' in pref_config['SOURCE_TABLE_SEARCH_COLUMN']:
@@ -290,6 +297,35 @@ def create_excel_preference_file_row(pref_config):
 
 	close()
 
+	# Get the target table information
+	init_db({
+		'DB_SERVER': pref_config['TARGET_SERVER'],
+		'DB_NAME': pref_config['TARGET_DATABASE'],
+		'DB_USER': pref_config['TARGET_USER'],
+		'DB_PASSWORD': pref_config['TARGET_PASSWORD'],
+		'DB_DRIVER': pref_config['TARGET_DRIVER'],
+		'DB_TRUSTED_CONNECTION': pref_config['TARGET_TRUSTED_CONNECTION']
+	})
+
+	target_table_exists = False
+	target_table_row_count = 0
+
+	try:
+		target_table_exists = src.db_utils.get_table_exists(
+			pref_config['TARGET_SCHEMA'], pref_config['TARGET_TABLE']
+		)
+
+		if target_table_exists:
+			target_table_row_counts = src.db_utils.get_table_record_count(
+				pref_config['TARGET_SCHEMA'], pref_config['TARGET_TABLE']
+			)
+
+			target_table_row_count = target_table_row_counts['count']
+	except Exception as e:
+		err = str(e)
+
+	close()
+
 	row = [
 		pref_config['SOURCE_SERVER'],
 		pref_config['SOURCE_DATABASE'],
@@ -315,6 +351,9 @@ def create_excel_preference_file_row(pref_config):
 		pref_config['TARGET_TABLE'],
 		src.utils.serialize_list_for_excel(pref_config['TARGET_TABLE_EXTRA_KEY_COLUMNS']),
 		src.utils.serialize_list_for_excel(pref_config['TARGET_TABLE_EXTRA_COLUMNS']),
+		'true' if target_table_exists else 'false',
+		target_table_row_count,
+		0,
 		pref_config['DATA_PARTITION_FUNCTION'],
 		pref_config['DATA_PARTITION_COLUMN'],
 		pref_config['INDEX_PARTITION_FUNCTION'],
