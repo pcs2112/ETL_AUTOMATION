@@ -148,3 +148,14 @@ from
 	"""
 
 	return fetch_row(sql.format(schema_name, table_name, column_name))
+
+
+def get_table_record_count(schema_name, table_name):
+	"""
+	Returns the records count for the specified table.
+	:param str schema_name: Schema name
+	:param str table_name: Database table name
+	:return list
+	"""
+	sql = "select count(*) COUNT from {0}.{1} with(nolock);"
+	return fetch_row(sql.format(schema_name, table_name))
