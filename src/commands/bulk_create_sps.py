@@ -29,6 +29,12 @@ def bulk_create_sps(in_filename):
 	print(src.code_gen.create_column_indices(index_sql_files))
 	print("")
 
+	# Generate ETL merge exec file
+	print("")
+	print('The following ETL automation merge exec file was created:')
+	print(src.code_gen.create_etl_merge_exec(data))
+	print("")
+
 	# Get the JSON preference files
 	json_files = src.preference_file_utils.create_json_preference_files(filename)
 	for json_file in json_files:
