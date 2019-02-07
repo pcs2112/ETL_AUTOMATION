@@ -107,6 +107,15 @@ def create_sp(preference_filename):
 	if pref_config['TARGET_TABLE_EXISTS'] and not pref_config['TARGET_TABLE_RECREATE']:
 		print(f"{pref_config['TARGET_TABLE']} table exists.")
 	else:
+		if pref_config['TARGET_TABLE_EXISTS']:
+			with get_db().cursor() as cursor:
+				table_name = pref_config['TARGET_SCHEMA'] + '.' + pref_config['TARGET_TABLE']
+				try:
+					cursor.execute(f"DROP {table_name}")
+				except Exception as e:
+					print(f"Error dropping table {table_name}.")
+					raise e
+
 		with open(create_table_filename) as fp:
 			create_table_sql = fp.read()
 
