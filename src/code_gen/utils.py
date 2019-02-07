@@ -32,7 +32,7 @@ def set_numeric(column, parts):
 
 
 def set_sysname(column, parts):
-	parts.append(f"[nvarchar](128)")
+	parts.append('[nvarchar](128)')
 
 
 def get_table_definition(table_definition):
