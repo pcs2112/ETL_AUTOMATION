@@ -16,7 +16,7 @@ def set_datetime(column, parts):
 
 def set_char(column, parts):
 	return set_varchar(column, parts)
-	
+
 
 def set_varchar(column, parts):
 	max_length = 'max' if column['max_length'] < 1 else column['max_length']
@@ -29,8 +29,8 @@ def set_decimal(column, parts):
 
 def set_numeric(column, parts):
 	parts.append(f"[{column['data_type']}] ({column['precision']},{column['scale']})")
-	
-	
+
+
 def set_sysname(column, parts):
 	parts.append(f"[nvarchar(128)]")
 
@@ -59,7 +59,7 @@ def get_source_table_definition(table_definition):
 	columns = []
 
 	for key, column in table_definition.items():
-		parts = [column['column_name']]
+		parts = [f"[{column['column_name']}]"]
 
 		try:
 			func = getattr(module, 'set_' + column['data_type'])
@@ -78,7 +78,7 @@ def get_target_table_definition(table_definition):
 	columns = []
 
 	for key, column in table_definition.items():
-		parts = [column['target_table_column_name']]
+		parts = [f"[{column['target_table_column_name']}]"]
 
 		try:
 			func = getattr(module, 'set_' + column['data_type'])

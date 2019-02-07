@@ -19,7 +19,7 @@ def create_table(config, table_definition):
 	# Set the columns
 	columns = src.code_gen.utils.get_target_table_definition(table_definition)
 	for column in config['TARGET_TABLE_EXTRA_COLUMNS']:
-		columns.append(f"{column['column_name']} {column['data_type']}")
+		columns.append(f"[{column['column_name']}] {column['data_type']}")
 
 	columns_sql = ",\n".join(["\t" + str(column) for column in columns])
 	sql = base_sql.replace('<TARGET_TABLE_COLUMNS>', columns_sql + ",\n")
@@ -27,13 +27,13 @@ def create_table(config, table_definition):
 	# Set the key columns
 	key_columns = []
 	if primary_key != '':
-		key_columns = [f"{primary_key} ASC"]
+		key_columns = [f"[{primary_key}] ASC"]
 
 	if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
 		key_columns = key_columns + config['TARGET_TABLE_EXTRA_KEY_COLUMNS']
 
 	if config['DATA_PARTITION_COLUMN'] != '':
-		key_columns.append(f"{config['DATA_PARTITION_COLUMN']} DESC")
+		key_columns.append(f"[{config['DATA_PARTITION_COLUMN']}] DESC")
 
 	key_columns_sql = ",\n".join(["\t\t" + str(key_column) for key_column in key_columns])
 	sql = sql.replace('<TARGET_TABLE_KEY_COLUMNS>', key_columns_sql)
