@@ -111,7 +111,7 @@ def create_sp(preference_filename):
 			with get_db().cursor() as cursor:
 				table_name = pref_config['TARGET_SCHEMA'] + '.' + pref_config['TARGET_TABLE']
 				try:
-					cursor.execute(f"DROP {table_name}")
+					cursor.execute(f"DROP TABLE {table_name}")
 				except Exception as e:
 					print(f"Error dropping table {table_name}.")
 					raise e
