@@ -90,6 +90,7 @@ def create_sp(preference_filename):
 
 	create_table_filename = src.code_gen.create_table(pref_config, table_definition)
 	create_sp_filename = src.code_gen.create_sp(pref_config, table_definition, table_counts)
+	create_check_merge_sp_filename = src.code_gen.create_check_merge_sp(pref_config, table_definition, table_counts)
 
 	close()
 
@@ -148,6 +149,24 @@ def create_sp(preference_filename):
 						cursor.execute(normalized_sql)
 					except Exception as e:
 						print(f"Error on create sp for file {create_sp_filename}.")
+						raise e
+
+		print(f"{src.code_gen.utils.get_sp_name(pref_config['TARGET_TABLE'], pref_config['STORED_PROCEDURE_NAME'])} stored procedure created.")
+
+	# Create check merge SP
+	with open(create_check_merge_sp_filename) as fp:
+		create_check_merge_sp_sql = fp.read()
+
+	create_check_merge_sp_sql_parts = create_check_merge_sp_sql.split('GO -- delimiter')
+	if len(create_check_merge_sp_sql_parts) > 0:
+		for i, sql in enumerate(create_check_merge_sp_sql_parts):
+			normalized_sql = sql.strip()
+			if i > 0 and normalized_sql != '':
+				with get_db().cursor() as cursor:
+					try:
+						cursor.execute(normalized_sql)
+					except Exception as e:
+						print(f"Error on create check merge sp for file {create_check_merge_sp_filename}.")
 						raise e
 
 		print(f"{src.code_gen.utils.get_sp_name(pref_config['TARGET_TABLE'], pref_config['STORED_PROCEDURE_NAME'])} stored procedure created.")
