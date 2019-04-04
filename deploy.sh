@@ -11,7 +11,7 @@ mkdir "$_targetRoot/$_rootDirName/in"
 mkdir "$_targetRoot/$_rootDirName/in/old"
 mkdir "$_targetRoot/$_rootDirName/out"
 cp -r "$_cwd/src" "$_targetRoot/$_rootDirName/src"
-cp "$_cwd/.env" "$_targetRoot/$_rootDirName/.env"
+cp "$_cwd/.env.example" "$_targetRoot/$_rootDirName/.env"
 cp "$_cwd/app.py" "$_targetRoot/$_rootDirName/app.py"
 cp "$_cwd/requirements.txt" "$_targetRoot/$_rootDirName/requirements.txt"
 find "$_targetRoot/$_rootDirName" | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
