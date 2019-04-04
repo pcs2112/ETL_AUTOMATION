@@ -15,7 +15,7 @@ def init_db(config):
 		'DB_NAME': config['DB_NAME'],
 		'DB_USER': config['DB_USER'],
 		'DB_PASSWORD': config['DB_PASSWORD'],
-		'DB_TRUSTED_CONNECTION': config['DB_TRUSTED_CONNECTION'] == '1'
+		'DB_TRUSTED_CONNECTION': config['DB_TRUSTED_CONNECTION']
 	}
 
 
@@ -178,11 +178,15 @@ def execute_sp(sp_name, in_args, out_arg=None):
 		sql += f'EXEC @{out_arg} = {sp_name} '
 	else:
 		sql += f'EXEC {sp_name} '
-
+	
 	in_params = []
 	for key in in_args:
 		sql += f'@{key} = ?, '
-		in_params.append(str(in_args[key]))  # Convert all in args to string
+		in_param = in_args[key]
+		if in_param is not None:
+			in_param = str(in_param)
+		
+		in_params.append(in_param)  # Convert all in args to string
 
 	sql = sql.rstrip(', ')
 	sql += f';'
