@@ -15,5 +15,5 @@ cp "$_cwd/.env.example" "$_targetRoot/$_rootDirName/.env"
 cp "$_cwd/app.py" "$_targetRoot/$_rootDirName/app.py"
 cp "$_cwd/requirements.txt" "$_targetRoot/$_rootDirName/requirements.txt"
 find "$_targetRoot/$_rootDirName" | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
-cd "$_targetRoot"
-zip -r "$_targetRoot/$_rootDirName.zip" ./${_rootDirName}/*
+cd "$_targetRoot/${_rootDirName}"
+zip -r "$_targetRoot/$_rootDirName.zip" .
