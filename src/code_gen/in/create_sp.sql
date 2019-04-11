@@ -190,8 +190,7 @@ AS
 		@ErrorLine = ERROR_LINE(),
 		@ErrorMessage = ERROR_MESSAGE();
 
-	EXEC MWH.MERGE_ETL_TryCatchError_wRtn 'save error', @ERR, @ErrorSeverity, @ErrorState, @ErrorProcedure, @ErrorLine,
-																				@ErrorMessage, @My_SP_NAME, @TryCatchError_ID OUTPUT;
+	EXEC MWH.MERGE_ETL_TryCatchError_wLoadnRtn 'save error' , @ERR, @ErrorSeverity, @ErrorState, @ErrorProcedure, @ErrorLine, @ErrorMessage, @My_SP_NAME, @LOAD_HIST_PKID, @TryCatchError_ID OUTPUT;
 
 	END CATCH;
 
