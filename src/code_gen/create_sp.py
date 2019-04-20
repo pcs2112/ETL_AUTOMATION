@@ -106,7 +106,7 @@ def create_sp(config, table_definition, table_counts=None):
     
     if table_counts is None:
         table_counts['min_value'] = row_min_date
-    
+        
     period_start_date = src.utils.get_default_value(table_counts['min_value'], row_min_date)
     sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
     

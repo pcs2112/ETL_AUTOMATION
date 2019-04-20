@@ -86,6 +86,9 @@ def get_default_value(value, default):
         
         return value
     
+    if value is None:
+        return default
+    
     return value
 
 
