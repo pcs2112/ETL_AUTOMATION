@@ -4,7 +4,7 @@ from datetime import *
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'SP.sql'
-row_min_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
+row_min_date = datetime(2000, 1, 1)
 
 
 def get_insert_columns(table_definition, extra_columns):

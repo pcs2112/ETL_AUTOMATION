@@ -15,7 +15,7 @@ def set_datetime(column, parts):
     
 
 def set_datetime2(column, parts):
-    parts.append(f"[{column['data_type']}]")
+    parts.append(f"[{column['data_type']}] ({column['scale']})")
 
 
 def set_char(column, parts):
