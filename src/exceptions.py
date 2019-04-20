@@ -1,10 +1,10 @@
 class SearchColumnNotFound(Exception):
-	pass
+    pass
 
 
 class SearchColumnNoIndex(Exception):
-	pass
+    pass
 
 
 class SearchColumnInvalidValue(Exception):
-	pass
+    pass

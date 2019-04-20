@@ -17,19 +17,19 @@ CODE_GENERATION_IN_DIR = os.path.join(ROOT_DIR, 'src', 'code_gen', 'in')
 
 # Set the settings
 config = {
-	'DB_SERVER': os.getenv('DB_HOST'),
-	'DB_NAME': os.getenv('DB_NAME'),
-	'DB_USER': os.getenv('DB_USER'),
-	'DB_PASSWORD': os.getenv('DB_PASSWORD'),
-	'DB_DRIVER': os.getenv('DB_DRIVER'),
-	'DB_TRUSTED_CONNECTION': os.getenv('DB_TRUSTED_CONNECTION') == '1',
-	'ROOT_DIR': ROOT_DIR,
-	'ETL_CONFIG_IN_DIR': ETL_CONFIG_IN_DIR,
-	'ETL_CONFIG_OUT_DIR': ETL_CONFIG_OUT_DIR,
-	'CODE_GENERATION_IN_DIR': CODE_GENERATION_IN_DIR,
-	'TARGET_TABLE_COLUMN_PREFIX': 'S_'
+    'DB_SERVER': os.getenv('DB_HOST'),
+    'DB_NAME': os.getenv('DB_NAME'),
+    'DB_USER': os.getenv('DB_USER'),
+    'DB_PASSWORD': os.getenv('DB_PASSWORD'),
+    'DB_DRIVER': os.getenv('DB_DRIVER'),
+    'DB_TRUSTED_CONNECTION': os.getenv('DB_TRUSTED_CONNECTION') == '1',
+    'ROOT_DIR': ROOT_DIR,
+    'ETL_CONFIG_IN_DIR': ETL_CONFIG_IN_DIR,
+    'ETL_CONFIG_OUT_DIR': ETL_CONFIG_OUT_DIR,
+    'CODE_GENERATION_IN_DIR': CODE_GENERATION_IN_DIR,
+    'TARGET_TABLE_COLUMN_PREFIX': 'S_'
 }
 
 
 def get_config():
-	return config
+    return config
