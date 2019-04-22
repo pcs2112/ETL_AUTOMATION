@@ -1,14 +1,15 @@
 from src.config import get_config
 from src.mssql_connection import fetch_row, fetch_rows
+from src.utils import split_string
 
 
 def get_table_exists(schema_name, table_name):
     """ Checks a table exits. """
     sql = ("SELECT * FROM sys.objects so JOIN sys.schemas ss on (so.schema_id = ss.schema_id) "
            "WHERE so.type = 'U' AND so.name = ? and ss.name = ?")
-    
+
     row = fetch_row(sql, [table_name, schema_name])
-    
+
     return True if row else False
 
 
@@ -24,7 +25,7 @@ def get_table_definition(db_name, schema_name, table_name, server_name, excluded
     """
     server_name = '' if server_name == '127.0.0.1' or server_name == 'localhost' else server_name
     server_name = f'[{server_name}].' if server_name else ''
-    
+
     sql = ("SELECT T.name AS TABLE_NAME, C.name AS COLUMN_NAME, P.name AS DATA_TYPE, "
            "P.max_length AS SIZE, CAST(P.precision AS VARCHAR) + '/' + CAST(P.scale AS VARCHAR) AS PRECISION_SCALE, "
            "c.* FROM {0}[{1}].sys.objects AS T JOIN {0}[{1}].sys.columns AS C ON T.object_id = C.object_id "
@@ -32,9 +33,9 @@ def get_table_definition(db_name, schema_name, table_name, server_name, excluded
            "JOIN sys.schemas ss ON (T.schema_id = ss.schema_id) "
            " WHERE  T.type_desc = 'USER_TABLE' and ss.name = ? "
            "and T.name = ? and P.name != 'timestamp' order by column_id asc").format(server_name, db_name)
-    
+
     columns = fetch_rows(sql, [schema_name, table_name])
-    
+
     default_columns = {
         'ID': 1,
         'INSERT_DTTM': 1,
@@ -43,22 +44,22 @@ def get_table_definition(db_name, schema_name, table_name, server_name, excluded
         'MSTR_LOAD_ID': 1,
         'ACTIVE_FLAG': 1
     }
-    
+
     target_table_column_prefix = get_config()['TARGET_TABLE_COLUMN_PREFIX']
     out_columns = {}
-    
+
     for column in columns:
         if column['column_name'].upper() in default_columns:
             column['target_table_column_name'] = target_table_column_prefix + column['column_name']
         else:
             column['target_table_column_name'] = column['column_name']
-        
+
         out_columns[column['column_name'].upper()] = column
-    
+
     if len(excluded_columns) > 0:
         for excluded_column in excluded_columns:
             out_columns.pop(excluded_column)
-    
+
     return out_columns
 
 
@@ -125,7 +126,7 @@ def column_index_exists(schema_name, table_name, column_name):
         SchemaName, TableName, ColName, DATA_TYPE, index_name, index_type, object_id
     from table_indexes;
     """
-    
+
     row = fetch_row(sql, [schema_name, table_name, column_name])
     return row is not None
 
@@ -147,7 +148,7 @@ def get_record_counts(schema_name, table_name, column_name):
     from
         {0}.{1} with(nolock);
     """
-    
+
     return fetch_row(sql.format(schema_name, table_name, column_name))
 
 
@@ -160,3 +161,60 @@ def get_table_record_count(schema_name, table_name):
     """
     sql = "select count(*) COUNT from {0}.{1} with(nolock);"
     return fetch_row(sql.format(schema_name, table_name))
+
+
+def get_primary_keys(schema_name, table_name):
+    """ Returns the primary key columns for the specified table. """
+    sql = """
+    SELECT
+         DISTINCT kcu.TABLE_SCHEMA, kcu.TABLE_NAME, tc.CONSTRAINT_NAME, kcu.COLUMN_NAME, kcu.ORDINAL_POSITION
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+    INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS kcu ON kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+    WHERE tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
+    AND kcu.TABLE_SCHEMA = '{0}'
+    AND kcu.TABLE_NAME = '{1}'
+    ORDER BY kcu.ORDINAL_POSITION ASC
+    """
+
+    results = fetch_rows(sql.format(schema_name, table_name))
+    columns = []
+    for row in results:
+        columns.append({
+            'column_name': row['column_name'],
+            'order': 'asc'
+        })
+
+    return columns
+
+
+def get_primary_keys_from_str(value):
+    """ Returns a list of primary keys from a string. """
+    columns = []
+
+    if value == '':
+        return columns
+
+    primary_key_strs = split_string(value, '|')
+    for primary_key_str in primary_key_strs:
+        primary_key_str = primary_key_str.lower()
+        primary_key_parts = primary_key_str.split(' ')
+        column_name = primary_key_parts[0].strip()
+        order = primary_key_parts[len(primary_key_parts) - 1].strip()
+        if order != 'desc':
+            order = 'asc'
+
+        columns.append({
+            'column_name': column_name,
+            'order': order
+        })
+
+    return columns
+
+
+def get_primary_keys_str(columns):
+    """ Returns the string of primary keys. """
+    out = ''
+    for column in columns:
+        out += f"{column['column_name']} {column['order']}|"
+
+    return out.rstrip('|')
