@@ -20,7 +20,7 @@ def get_configuration_file_path(file_name):
     file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], ntpath.basename(file_name))
     if os.path.exists(file_path) is False:
         raise FileExistsError(f"{file_name} is an invalid file.")
-    
+
     return file_path
 
 
@@ -31,10 +31,10 @@ def get_configuration_file(file_name):
     :return: str
     """
     file_path = get_configuration_file_path(file_name)
-    
+
     with open(file_path) as fp:
         contents = fp.read()
-    
+
     return contents
 
 
@@ -57,7 +57,7 @@ def create_json_preference_file(file_name, contents):
     file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], file_name)
     with open(file_path, "w+") as fp:
         fp.write(contents)
-    
+
     return file_path
 
 
@@ -74,7 +74,7 @@ def create_json_preference_files(file_name):
             f"C8_{config['STORED_PROCEDURE_SCHEMA']}.{config['STORED_PROCEDURE_NAME']}.json",
             json.dumps(config, indent=4)
         ))
-    
+
     return files
 
 
@@ -97,6 +97,7 @@ def create_excel_preference_file(in_filename):
         'SOURCE_TABLE_SEARCH_CONDITION',
         'SOURCE_TABLE_PRIMARY_KEY',
         'SOURCE_EXCLUDED_COLUMNS',
+        'SET_DAY_START',
         'TARGET_SERVER',
         'TARGET_DATABASE',
         'TARGET_USER',
@@ -130,21 +131,21 @@ def create_excel_preference_file(in_filename):
         'SP_C8_COMMAND',
         'ERROR_MESSAGE'
     ]
-    
+
     rows.append(header)
-    
+
     for i, row in enumerate(data):
         rows.append(create_excel_preference_file_row(row))
-    
+
     filename, file_extension = os.path.splitext(in_filename)
     out_filename = filename + '_FINAL' + file_extension
-    
+
     # Move the existing file to the old directory
     if os.path.exists(out_filename):
         old_filename = ntpath.basename(filename)
         old_filename_new_filename = old_filename + '_' + src.utils.get_filename_date_postfix() + file_extension
         os.rename(out_filename, os.path.join(get_config()['ETL_CONFIG_IN_DIR'], 'old', old_filename_new_filename))
-    
+
     src.excel_utils.write_workbook_data(out_filename, ['ETL_STORED_PROCEDURES'], rows)
     return out_filename
 
@@ -158,20 +159,20 @@ def get_excel_preference_file_data(file_name):
     wb = read_workbook(file_name)
     in_data = read_workbook_data(wb)
     out_data = []
-    
+
     for i in range(len(in_data)):
         obj = in_data[i]
-        
+
         # Get the target table name
         target_table = src.code_gen.utils.get_target_table_name(obj['SOURCE_TABLE'], obj['TARGET_TABLE'])
-        
+
         # Get the stored procedure name
         sp_name = src.code_gen.utils.get_sp_name(target_table, obj['STORED_PROCEDURE_NAME'])
-        
+
         # Get the target table extra columns
         target_table_extra_cols_list = src.utils.split_string(obj['TARGET_TABLE_EXTRA_COLUMNS'], '|')
         target_table_extra_cols = []
-        
+
         for col in target_table_extra_cols_list:
             props = src.utils.split_string(col, ';')
             if len(props) > 0:
@@ -180,9 +181,16 @@ def get_excel_preference_file_data(file_name):
                     'data_type': props[1],
                     'value': props[2]
                 })
-        
+
+        primary_keys = obj['SOURCE_TABLE_PRIMARY_KEY']
+        if primary_keys == '':
+            primary_keys = src.db_utils.get_primary_keys(obj['SOURCE_SCHEMA'], obj['SOURCE_DATABASE'])
+        else:
+            primary_keys = src.db_utils.get_primary_keys_from_str(primary_keys)
+
+        set_day_start = src.utils.get_default_value(obj.get('SET_DAY_START', ''), 'false') == 'true'
         target_table_exists = src.utils.get_default_value(obj.get('TARGET_TABLE_EXISTS', ''), 'false') == 'true'
-        
+
         config = {
             'SOURCE_SERVER': obj['SOURCE_SERVER'],
             'SOURCE_DATABASE': obj['SOURCE_DATABASE'],
@@ -199,8 +207,9 @@ def get_excel_preference_file_data(file_name):
                 'is_utc': obj['SOURCE_TABLE_SEARCH_COLUMN_IS_UTC'] == 'true'
             },
             'SOURCE_TABLE_SEARCH_CONDITION': obj['SOURCE_TABLE_SEARCH_CONDITION'],
-            'SOURCE_TABLE_PRIMARY_KEY': obj['SOURCE_TABLE_PRIMARY_KEY'],
+            'SOURCE_TABLE_PRIMARY_KEY': primary_keys,
             'SOURCE_EXCLUDED_COLUMNS': src.utils.split_string(obj['SOURCE_EXCLUDED_COLUMNS'], '|'),
+            'SET_DAY_START': set_day_start,
             'TARGET_SERVER': obj['TARGET_SERVER'],
             'TARGET_DATABASE': obj['TARGET_DATABASE'],
             'TARGET_USER': obj.get('TARGET_USER', ''),
@@ -236,15 +245,15 @@ def get_excel_preference_file_data(file_name):
             'SP_C8_COMMAND': obj.get('SP_C8_COMMAND', ''),
             'ERROR_MESSAGE': obj.get('ERROR_MESSAGE', '')
         }
-        
+
         out_data.append(config)
-    
+
     return out_data
 
 
 def create_excel_preference_file_row(pref_config):
     """ Uses the specified preference config to create a row of data for the excel file. """
-    
+
     # Get the source table information
     init_db({
         'DB_SERVER': pref_config['SOURCE_SERVER'],
@@ -254,7 +263,7 @@ def create_excel_preference_file_row(pref_config):
         'DB_DRIVER': pref_config['SOURCE_DRIVER'],
         'DB_TRUSTED_CONNECTION': pref_config['SOURCE_TRUSTED_CONNECTION']
     })
-    
+
     err = ''
     search_column_name = ''
     if 'column_name' in pref_config['SOURCE_TABLE_SEARCH_COLUMN']:
@@ -267,7 +276,7 @@ def create_excel_preference_file_row(pref_config):
         'max_value': '',
         'month_cnt': ''
     }
-    
+
     try:
         table_definition = src.db_utils.get_table_definition(
             pref_config['SOURCE_DATABASE'],
@@ -276,7 +285,7 @@ def create_excel_preference_file_row(pref_config):
             pref_config['SOURCE_SERVER'],
             pref_config['SOURCE_EXCLUDED_COLUMNS']
         )
-        
+
         validate_preference_file_config(pref_config, table_definition)
     except SearchColumnInvalidValue as e:
         err = str(e)
@@ -291,7 +300,7 @@ def create_excel_preference_file_row(pref_config):
         search_column_has_index = False
     except Exception as e:
         err = str(e)
-    
+
     if search_column_exists:
         try:
             counts = src.db_utils.get_record_counts(
@@ -299,9 +308,9 @@ def create_excel_preference_file_row(pref_config):
             )
         except Exception as e:
             err = str(e)
-    
+
     close()
-    
+
     # Get the target table information
     init_db({
         'DB_SERVER': pref_config['TARGET_SERVER'],
@@ -311,26 +320,31 @@ def create_excel_preference_file_row(pref_config):
         'DB_DRIVER': pref_config['TARGET_DRIVER'],
         'DB_TRUSTED_CONNECTION': pref_config['TARGET_TRUSTED_CONNECTION']
     })
-    
+
     target_table_exists = False
     target_table_row_count = 0
-    
+
     try:
         target_table_exists = src.db_utils.get_table_exists(
             pref_config['TARGET_SCHEMA'], pref_config['TARGET_TABLE']
         )
-        
+
         if target_table_exists:
             target_table_row_counts = src.db_utils.get_table_record_count(
                 pref_config['TARGET_SCHEMA'], pref_config['TARGET_TABLE']
             )
-            
+
             target_table_row_count = target_table_row_counts['count']
     except Exception as e:
         err = str(e)
-    
+
     close()
-    
+
+    # Get the primary keys
+    primary_keys = pref_config['SOURCE_TABLE_PRIMARY_KEY']
+    if len(primary_keys) < 1:
+        primary_keys = src.db_utils.get_primary_keys(pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'])
+
     row = [
         pref_config['SOURCE_SERVER'],
         pref_config['SOURCE_DATABASE'],
@@ -344,8 +358,9 @@ def create_excel_preference_file_row(pref_config):
         search_column_name,
         'true' if search_column_exists and pref_config['SOURCE_TABLE_SEARCH_COLUMN']['is_utc'] else 'false',
         pref_config['SOURCE_TABLE_SEARCH_CONDITION'],
-        pref_config['SOURCE_TABLE_PRIMARY_KEY'],
+        src.db_utils.get_primary_keys_str(primary_keys),
         pref_config['SOURCE_EXCLUDED_COLUMNS'],
+        'true' if pref_config['SET_DAY_START'] else 'false',
         pref_config['TARGET_SERVER'],
         pref_config['TARGET_DATABASE'],
         pref_config['TARGET_USER'],
@@ -379,7 +394,7 @@ def create_excel_preference_file_row(pref_config):
         f"python app.py create_sp C8_{pref_config['STORED_PROCEDURE_SCHEMA']}.{pref_config['STORED_PROCEDURE_NAME']}.json",
         err
     ]
-    
+
     return row
 
 
@@ -408,49 +423,58 @@ def validate_preference_file_config(config, table_definition):
         'STORED_PROCEDURE_NAME',
         'SOURCE_TYPE'
     ]
-    
+
     int_args = [
         'MIN_CALL_DURATION_MINUTES',
         'MAX_CALL_DURATION_MINUTES',
         'ETL_PRIORITY'
     ]
-    
+
+    bool_args = [
+        'SET_DAY_START'
+    ]
+
     arr_args = [
         'SOURCE_EXCLUDED_COLUMNS',
         'TARGET_TABLE_EXTRA_KEY_COLUMNS',
         'TARGET_TABLE_EXTRA_COLUMNS',
         'UPDATE_MATCH_CHECK_COLUMNS'
     ]
-    
+
     # Validate the string args
     for str_arg in str_args:
         if str_arg not in config or not isinstance(config[str_arg], str):
             raise ValueError(f"{str_arg} must be a string.")
-    
+
     # Validate the int args
     for int_arg in int_args:
         if int_arg not in config or not isinstance(config[int_arg], int):
             raise ValueError(f"{int_arg} must be an integer.")
-    
+
+    # Validate the bool args
+    for bool_arg in bool_args:
+        if bool_arg not in config or not isinstance(config[bool_arg], bool):
+            raise ValueError(f"{bool_arg} must be a boolean.")
+
     # Validate the array args
     for arr_arg in arr_args:
         if arr_arg not in config or not isinstance(config[arr_arg], list):
             raise ValueError(f"{arr_arg} must be an array.")
-    
+
     # Validate the search column
     search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
     if not isinstance(search_column, dict) or 'column_name' not in search_column or 'is_utc' not in search_column:
         raise SearchColumnInvalidValue(
             'SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.'
         )
-    
+
     search_column_name = search_column['column_name']
     if search_column_name == '':
         raise SearchColumnInvalidValue('SOURCE_TABLE_SEARCH_COLUMN: column name can\'t be empty.')
-    
+
     if not src.code_gen.utils.get_column_exists(table_definition, search_column_name):
         raise SearchColumnNotFound(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
-    
+
     # Check the index exists
     try:
         search_column_index_exists = src.db_utils.column_index_exists(
@@ -460,16 +484,16 @@ def validate_preference_file_config(config, table_definition):
         )
     except Exception as e:
         raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
-    
+
     if not search_column_index_exists:
         raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
-    
+
     # Validate the update check columns
     if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
         for column_name in config['TARGET_TABLE_EXTRA_KEY_COLUMNS']:
             if not src.code_gen.utils.get_column_exists(table_definition, column_name):
                 raise ValueError(f"TARGET_TABLE_EXTRA_KEY_COLUMNS: \"{column_name}\" is an invalid column.")
-    
+
     # Validate the update check columns
     if len(config['UPDATE_MATCH_CHECK_COLUMNS']) > 0:
         for column_name in config['UPDATE_MATCH_CHECK_COLUMNS']:
