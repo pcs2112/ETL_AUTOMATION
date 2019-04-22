@@ -118,6 +118,10 @@ def get_target_table_column_names(table_definition):
     return get_column_names(table_definition, 'target_table_column_name')
 
 
+def get_target_table_column_name(column_name, table_definition):
+    return table_definition[column_name.upper()]['column_name']
+
+
 def get_identity_column(table_definition):
     for key, column in table_definition.items():
         if column['is_identity'] == 1:

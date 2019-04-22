@@ -1,10 +1,8 @@
 import src.utils
 import src.code_gen.utils
-from datetime import *
 
 base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'SP.sql'
-row_min_date = datetime(2000, 1, 1)
 
 
 def get_insert_columns(table_definition, extra_columns):
@@ -67,6 +65,21 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
     return " or \n".join([str(condition) for condition in conditions])
 
 
+def get_pk_condition_sql(table_definition, primary_keys):
+    pk_column_names = []
+    for pk in primary_keys:
+        pk_column_names.append(pk['column_name'])
+        
+    conditions = []
+    for key, column in table_definition.items():
+        if column['column_name'] in pk_column_names:
+            conditions.append(
+                f"target.[{column['target_table_column_name']}] = source.[{column['target_table_column_name']}]"
+            )
+            
+    return " and \n".join([str(condition) for condition in conditions])
+
+
 def create_sp(config, table_definition, table_counts=None):
     # Get the base sql for creating a table
     sql = src.utils.get_base_sql_code(base_sql_file_name)
@@ -108,8 +121,6 @@ def create_sp(config, table_definition, table_counts=None):
     period_start_date = src.code_gen.utils.get_period_start_date(
         '' if table_counts is None else table_counts['min_value']
     )
-    
-    period_start_date = src.utils.get_default_value(table_counts['min_value'], row_min_date)
     sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
 
     # Set the target table definition columns
@@ -140,12 +151,10 @@ def create_sp(config, table_definition, table_counts=None):
         ["\t\t" + '[' + str(column) + ']' for column in target_table_column_names])
     sql = sql.replace('<TARGET_TABLE_COLUMN_NAMES>', target_table_column_names_sql)
 
-    # Set the identity column
-    if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
-        sql = sql.replace('<TARGET_TABLE_PRIMARY_KEY>', config['SOURCE_TABLE_PRIMARY_KEY'])
-    else:
-        identity_column = src.code_gen.utils.get_identity_column(table_definition)
-        sql = sql.replace('<TARGET_TABLE_PRIMARY_KEY>', identity_column['target_table_column_name'])
+    # Set the pk condition
+    sql = sql.replace('<TARGET_TABLE_PRIMARY_KEY_CONDITION>', get_pk_condition_sql(
+        table_definition, config['SOURCE_TABLE_PRIMARY_KEY']
+    ))
 
     # Set the target table update columns and values
     target_table_update_values = get_update_values(table_definition, config['TARGET_TABLE_EXTRA_COLUMNS'])

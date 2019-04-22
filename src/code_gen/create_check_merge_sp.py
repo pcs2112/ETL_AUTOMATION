@@ -1,6 +1,5 @@
 import src.utils
 import src.code_gen.utils
-from datetime import *
 
 base_sql_file_name = 'create_merge_check_sp.sql'
 out_file_name_postfix = 'SP.sql'

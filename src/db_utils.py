@@ -180,7 +180,7 @@ def get_primary_keys(schema_name, table_name):
     columns = []
     for row in results:
         columns.append({
-            'column_name': row['column_name'],
+            'column_name': row['column_name'].upper(),
             'column_sort_order': 'asc'
         })
 
@@ -204,7 +204,7 @@ def get_primary_keys_from_str(value):
             column_sort_order = 'asc'
 
         columns.append({
-            'column_name': column_name,
+            'column_name': column_name.upper(),
             'column_sort_order': column_sort_order
         })
 
@@ -215,6 +215,6 @@ def get_primary_keys_str(columns):
     """ Returns the string of primary keys. """
     out = ''
     for column in columns:
-        out += f"{column['column_name']} {column['column_sort_order']}|"
+        out += f"{column['column_name'].upper()} {column['column_sort_order']}|"
 
     return out.rstrip('|')

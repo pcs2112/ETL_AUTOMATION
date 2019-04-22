@@ -181,12 +181,9 @@ def get_excel_preference_file_data(file_name):
                     'data_type': props[1],
                     'value': props[2]
                 })
-
-        primary_keys = obj['SOURCE_TABLE_PRIMARY_KEY']
-        if primary_keys == '':
-            primary_keys = src.db_utils.get_primary_keys(obj['SOURCE_SCHEMA'], obj['SOURCE_DATABASE'])
-        else:
-            primary_keys = src.db_utils.get_primary_keys_from_str(primary_keys)
+                
+        # Get the primary keys
+        primary_keys = src.db_utils.get_primary_keys_from_str(obj['SOURCE_TABLE_PRIMARY_KEY'])
 
         set_day_start = src.utils.get_default_value(obj.get('SET_DAY_START', ''), 'false') == 'true'
         target_table_exists = src.utils.get_default_value(obj.get('TARGET_TABLE_EXISTS', ''), 'false') == 'true'
@@ -343,8 +340,12 @@ def create_excel_preference_file_row(pref_config):
     # Get the primary keys
     primary_keys = pref_config['SOURCE_TABLE_PRIMARY_KEY']
     if len(primary_keys) < 1:
-        primary_keys = src.db_utils.get_primary_keys(pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'])
-
+        primary_keys = src.db_utils.get_primary_keys_str(
+            src.db_utils.get_primary_keys(pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'])
+        )
+    else:
+        primary_keys = src.db_utils.get_primary_keys_str(primary_keys)
+        
     row = [
         pref_config['SOURCE_SERVER'],
         pref_config['SOURCE_DATABASE'],
@@ -358,8 +359,8 @@ def create_excel_preference_file_row(pref_config):
         search_column_name,
         'true' if search_column_exists and pref_config['SOURCE_TABLE_SEARCH_COLUMN']['is_utc'] else 'false',
         pref_config['SOURCE_TABLE_SEARCH_CONDITION'],
-        src.db_utils.get_primary_keys_str(primary_keys),
-        pref_config['SOURCE_EXCLUDED_COLUMNS'],
+        primary_keys,
+        src.utils.serialize_list_for_excel(pref_config['SOURCE_EXCLUDED_COLUMNS']),
         'true' if pref_config['SET_DAY_START'] else 'false',
         pref_config['TARGET_SERVER'],
         pref_config['TARGET_DATABASE'],
@@ -394,7 +395,7 @@ def create_excel_preference_file_row(pref_config):
         f"python app.py create_sp C8_{pref_config['STORED_PROCEDURE_SCHEMA']}.{pref_config['STORED_PROCEDURE_NAME']}.json",
         err
     ]
-
+    
     return row
 
 
@@ -411,7 +412,6 @@ def validate_preference_file_config(config, table_definition):
         'SOURCE_TABLE',
         'SOURCE_DATA_MART',
         'SOURCE_TABLE_SEARCH_CONDITION',
-        'SOURCE_TABLE_PRIMARY_KEY',
         'TARGET_SERVER',
         'TARGET_DATABASE',
         'TARGET_SCHEMA',
@@ -435,6 +435,7 @@ def validate_preference_file_config(config, table_definition):
     ]
 
     arr_args = [
+        'SOURCE_TABLE_PRIMARY_KEY',
         'SOURCE_EXCLUDED_COLUMNS',
         'TARGET_TABLE_EXTRA_KEY_COLUMNS',
         'TARGET_TABLE_EXTRA_COLUMNS',
