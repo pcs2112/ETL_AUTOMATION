@@ -135,19 +135,24 @@ AS
 	BEGIN TRY
 
 	select @SRC_MISS_Cnt = count(*)
-	from [TARGET_DATABASE].[<TARGET_SCHEMA>].[TARGET_TABLE] with (nolock)
-	where <TARGET_TABLE_PRIMARY_KEY> not in (select <TARGET_TABLE_PRIMARY_KEY>
-	                               FROM <SOURCE_SERVER_SELECT>[<SOURCE_DATABASE>].[<SOURCE_SCHEMA>].[<SOURCE_TABLE>] with(nolock)
-	                               where <SOURCE_TABLE_SEARCH_COLUMN> between @SPERIOD_START_DTTM and @SPERIOD_END_DTTM)
-	                               and <SOURCE_TABLE_SEARCH_COLUMN> between @SPERIOD_START_DTTM and @SPERIOD_END_DTTM;
+	from [<TARGET_DATABASE>].[<TARGET_SCHEMA>].[<TARGET_TABLE>] trg with (nolock)
+	where not exists (
+	    select *
+	    FROM <SOURCE_SERVER_SELECT>[<SOURCE_DATABASE>].[<SOURCE_SCHEMA>].[<SOURCE_TABLE>] src with(nolock)
+	    where <SOURCE_TABLE_SEARCH_COLUMN> between @SPERIOD_START_DTTM and @SPERIOD_END_DTTM AND <TARGET_PK_CONDITION>
+	)
+	and <TARGET_TABLE_SEARCH_COLUMN> between @SPERIOD_START_DTTM and @SPERIOD_END_DTTM;
+
 	SET @ERR1 = @@ERROR;
 
 	select @TRG_MISS_Cnt = count(*), @MIN_MISS_DTTM = MIN(<SOURCE_TABLE_SEARCH_COLUMN>)
-	from <SOURCE_SERVER_SELECT>[<SOURCE_DATABASE>].[<SOURCE_SCHEMA>].[SOURCE_TABLE] t with (nolock)
-	where not exists(select *
-	                 from [TARGET_DATABASE].[<TARGET_SCHEMA>].[TARGET_TABLE] s with (nolock)
-	                 where s.<TARGET_TABLE_PRIMARY_KEY> = t.<TARGET_TABLE_PRIMARY_KEY>)
-		and <SOURCE_TABLE_SEARCH_COLUMN> between @SPERIOD_START_DTTM and @SPERIOD_END_DTTM;
+	from <SOURCE_SERVER_SELECT>[<SOURCE_DATABASE>].[<SOURCE_SCHEMA>].[<SOURCE_TABLE>] trg with (nolock)
+	where not exists(
+	    select *
+	    from [<TARGET_DATABASE>].[<TARGET_SCHEMA>].[<TARGET_TABLE>] src with (nolock)
+	    where <SOURCE_TABLE_SEARCH_COLUMN> between @SPERIOD_START_DTTM and @SPERIOD_END_DTTM AND <SOURCE_PK_CONDITION>
+	)
+	and <SOURCE_TABLE_SEARCH_COLUMN> between @SPERIOD_START_DTTM and @SPERIOD_END_DTTM;
 
 	SET @ERR2 = @@ERROR;
 	SET @RTN_ERR = [MWH].[qfst_non_zero](@ERR1, @ERR2);

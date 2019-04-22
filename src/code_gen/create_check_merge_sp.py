@@ -16,6 +16,36 @@ def get_is_utc(table_definition, search_column):
     return False
 
 
+def get_target_pk_condition_sql(table_definition, primary_keys):
+    pk_column_names = []
+    for pk in primary_keys:
+        pk_column_names.append(pk['column_name'])
+    
+    conditions = []
+    for key, column in table_definition.items():
+        if key in pk_column_names:
+            conditions.append(
+                f"trg.[{column['column_name']}] = src.[{column['target_table_column_name']}]"
+            )
+    
+    return " and \n".join([str(condition) for condition in conditions])
+
+
+def get_source_pk_condition_sql(table_definition, primary_keys):
+    pk_column_names = []
+    for pk in primary_keys:
+        pk_column_names.append(pk['column_name'])
+    
+    conditions = []
+    for key, column in table_definition.items():
+        if key in pk_column_names:
+            conditions.append(
+                f"trg.[{column['target_table_column_name']}] = src.[{column['column_name']}]"
+            )
+    
+    return " and \n".join([str(condition) for condition in conditions])
+
+
 def create_check_merge_sp(config, table_definition, table_counts=None):
     # Get the base sql for creating a table
     sql = src.utils.get_base_sql_code(base_sql_file_name)
@@ -47,6 +77,7 @@ def create_check_merge_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<TARGET_DATABASE>', config['TARGET_DATABASE'])
     sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
     sql = sql.replace('<TARGET_TABLE>', target_table)
+    sql = sql.replace('<TARGET_TABLE_SEARCH_COLUMN>', table_definition[config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'].upper()]['target_table_column_name'])
     sql = sql.replace('<MIN_CALL_DURATION_MINUTES>', str(config['MIN_CALL_DURATION_MINUTES']))
     sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
     sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
@@ -59,12 +90,15 @@ def create_check_merge_sp(config, table_definition, table_counts=None):
     )
     sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
     
-    # Set the identity column
-    if config['SOURCE_TABLE_PRIMARY_KEY'] != '':
-        sql = sql.replace('<TARGET_TABLE_PRIMARY_KEY>', config['SOURCE_TABLE_PRIMARY_KEY'])
-    else:
-        identity_column = src.code_gen.utils.get_identity_column(table_definition)
-        sql = sql.replace('<TARGET_TABLE_PRIMARY_KEY>', identity_column['target_table_column_name'])
+    # Set the target pk condition
+    sql = sql.replace('<TARGET_PK_CONDITION>', get_target_pk_condition_sql(
+        table_definition, config['SOURCE_TABLE_PRIMARY_KEY']
+    ))
+
+    # Set the source pk condition
+    sql = sql.replace('<SOURCE_PK_CONDITION>', get_source_pk_condition_sql(
+        table_definition, config['SOURCE_TABLE_PRIMARY_KEY']
+    ))
     
     # Create the file and return its path C8_<STORED_PROCEDURE_SCHEMA>.CHECK_<STORED_PROCEDURE_NAME>
     return src.utils.create_sql_file(
