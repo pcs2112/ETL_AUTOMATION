@@ -97,7 +97,7 @@ def create_excel_preference_file(in_filename):
         'SOURCE_TABLE_SEARCH_CONDITION',
         'SOURCE_TABLE_PRIMARY_KEY',
         'SOURCE_EXCLUDED_COLUMNS',
-        'GET_DATE_START',
+        'SET_DAY_START',
         'TARGET_SERVER',
         'TARGET_DATABASE',
         'TARGET_USER',
@@ -182,7 +182,7 @@ def get_excel_preference_file_data(file_name):
                     'value': props[2]
                 })
 
-        get_date_start = src.utils.get_default_value(obj.get('GET_DATE_START', ''), 'false') == 'true'
+        set_day_start = src.utils.get_default_value(obj.get('SET_DAY_START', ''), 'false') == 'true'
         target_table_exists = src.utils.get_default_value(obj.get('TARGET_TABLE_EXISTS', ''), 'false') == 'true'
 
         config = {
@@ -203,7 +203,7 @@ def get_excel_preference_file_data(file_name):
             'SOURCE_TABLE_SEARCH_CONDITION': obj['SOURCE_TABLE_SEARCH_CONDITION'],
             'SOURCE_TABLE_PRIMARY_KEY': obj['SOURCE_TABLE_PRIMARY_KEY'],
             'SOURCE_EXCLUDED_COLUMNS': src.utils.split_string(obj['SOURCE_EXCLUDED_COLUMNS'], '|'),
-            'GET_DATE_START': get_date_start,
+            'SET_DAY_START': set_day_start,
             'TARGET_SERVER': obj['TARGET_SERVER'],
             'TARGET_DATABASE': obj['TARGET_DATABASE'],
             'TARGET_USER': obj.get('TARGET_USER', ''),
@@ -349,7 +349,7 @@ def create_excel_preference_file_row(pref_config):
         pref_config['SOURCE_TABLE_SEARCH_CONDITION'],
         pref_config['SOURCE_TABLE_PRIMARY_KEY'],
         pref_config['SOURCE_EXCLUDED_COLUMNS'],
-        'true' if pref_config['GET_DATE_START'] else 'false',
+        'true' if pref_config['SET_DAY_START'] else 'false',
         pref_config['TARGET_SERVER'],
         pref_config['TARGET_DATABASE'],
         pref_config['TARGET_USER'],
@@ -420,7 +420,7 @@ def validate_preference_file_config(config, table_definition):
     ]
 
     bool_args = [
-        'GET_DATE_START'
+        'SET_DAY_START'
     ]
 
     arr_args = [

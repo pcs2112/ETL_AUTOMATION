@@ -103,7 +103,7 @@ def create_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
     sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
     sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
-    sql = sql.replace('<GET_DATE_START>', str(1 if config['GET_DATE_START'] else 0))
+    sql = sql.replace('<SET_DAY_START>', str(1 if config['SET_DAY_START'] else 0))
 
     if table_counts is None:
         table_counts['min_value'] = row_min_date
