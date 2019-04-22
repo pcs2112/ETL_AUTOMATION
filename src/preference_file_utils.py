@@ -182,6 +182,12 @@ def get_excel_preference_file_data(file_name):
                     'value': props[2]
                 })
 
+        primary_keys = obj['SOURCE_TABLE_PRIMARY_KEY']
+        if primary_keys == '':
+            primary_keys = src.db_utils.get_primary_keys(obj['SOURCE_SCHEMA'], obj['SOURCE_DATABASE'])
+        else:
+            primary_keys = src.db_utils.get_primary_keys_from_str(primary_keys)
+
         set_day_start = src.utils.get_default_value(obj.get('SET_DAY_START', ''), 'false') == 'true'
         target_table_exists = src.utils.get_default_value(obj.get('TARGET_TABLE_EXISTS', ''), 'false') == 'true'
 
@@ -201,7 +207,7 @@ def get_excel_preference_file_data(file_name):
                 'is_utc': obj['SOURCE_TABLE_SEARCH_COLUMN_IS_UTC'] == 'true'
             },
             'SOURCE_TABLE_SEARCH_CONDITION': obj['SOURCE_TABLE_SEARCH_CONDITION'],
-            'SOURCE_TABLE_PRIMARY_KEY': obj['SOURCE_TABLE_PRIMARY_KEY'],
+            'SOURCE_TABLE_PRIMARY_KEY': primary_keys,
             'SOURCE_EXCLUDED_COLUMNS': src.utils.split_string(obj['SOURCE_EXCLUDED_COLUMNS'], '|'),
             'SET_DAY_START': set_day_start,
             'TARGET_SERVER': obj['TARGET_SERVER'],
@@ -336,10 +342,8 @@ def create_excel_preference_file_row(pref_config):
 
     # Get the primary keys
     primary_keys = pref_config['SOURCE_TABLE_PRIMARY_KEY']
-    if primary_keys == '':
-        primary_keys = src.db_utils.get_primary_keys_str(
-            src.db_utils.get_primary_keys(pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'])
-        )
+    if len(primary_keys) < 1:
+        primary_keys = src.db_utils.get_primary_keys(pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'])
 
     row = [
         pref_config['SOURCE_SERVER'],
@@ -354,7 +358,7 @@ def create_excel_preference_file_row(pref_config):
         search_column_name,
         'true' if search_column_exists and pref_config['SOURCE_TABLE_SEARCH_COLUMN']['is_utc'] else 'false',
         pref_config['SOURCE_TABLE_SEARCH_CONDITION'],
-        primary_keys,
+        src.db_utils.get_primary_keys_str(primary_keys),
         pref_config['SOURCE_EXCLUDED_COLUMNS'],
         'true' if pref_config['SET_DAY_START'] else 'false',
         pref_config['TARGET_SERVER'],
