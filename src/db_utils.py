@@ -181,7 +181,7 @@ def get_primary_keys(schema_name, table_name):
     for row in results:
         columns.append({
             'column_name': row['column_name'].upper(),
-            'column_sort_order': 'asc'
+            'column_sort_order': 'ASC'
         })
 
     return columns
@@ -205,7 +205,7 @@ def get_primary_keys_from_str(value):
 
         columns.append({
             'column_name': column_name.upper(),
-            'column_sort_order': column_sort_order
+            'column_sort_order': column_sort_order.upper()
         })
 
     return columns
