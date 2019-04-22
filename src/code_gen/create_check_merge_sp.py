@@ -4,7 +4,6 @@ from datetime import *
 
 base_sql_file_name = 'create_merge_check_sp.sql'
 out_file_name_postfix = 'SP.sql'
-row_min_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
 
 
 def get_is_utc(table_definition, search_column):
@@ -55,11 +54,10 @@ def create_check_merge_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<SOURCE_TYPE>', str(config['SOURCE_TYPE']))
     sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
     sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
-    
-    if table_counts is None:
-        table_counts['min_value'] = row_min_date
-    
-    period_start_date = src.utils.get_default_value(table_counts['min_value'], row_min_date)
+
+    period_start_date = src.code_gen.utils.get_period_start_date(
+        '' if table_counts is None else table_counts['min_value']
+    )
     sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
     
     # Set the identity column

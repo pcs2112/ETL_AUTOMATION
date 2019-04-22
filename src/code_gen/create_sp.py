@@ -104,10 +104,9 @@ def create_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
     sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
     
-    if table_counts is None:
-        table_counts['min_value'] = row_min_date
-        
-    period_start_date = src.utils.get_default_value(table_counts['min_value'], row_min_date)
+    period_start_date = src.code_gen.utils.get_period_start_date(
+        '' if table_counts is None else table_counts['min_value']
+    )
     sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
     
     # Set the target table definition columns

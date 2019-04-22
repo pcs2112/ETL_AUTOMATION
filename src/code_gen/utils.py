@@ -1,4 +1,5 @@
 import sys
+from datetime import *
 
 
 def set_nullable(column, parts):
@@ -130,3 +131,16 @@ def get_sp_name(target_table_name, sp_name):
 
 def get_column_exists(table_definition, column_name):
     return column_name.upper() in table_definition
+
+
+def get_period_start_date(period_start_date):
+    if period_start_date is None or period_start_date == '':
+        period_start_date = datetime(2000, 1, 1)
+
+    if isinstance(period_start_date, str):
+        if len(period_start_date) > 18:
+            period_start_date = period_start_date[0:19]
+
+        period_start_date = datetime.strptime(period_start_date, '%Y-%m-%d %H:%M:%S')
+    
+    return period_start_date
