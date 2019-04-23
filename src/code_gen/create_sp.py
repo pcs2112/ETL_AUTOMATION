@@ -5,13 +5,21 @@ base_sql_file_name = 'create_sp.sql'
 out_file_name_postfix = 'SP.sql'
 
 
+def get_target_table_column_name(column_name, table_definition):
+    norm_column_name = column_name.upper()
+    if norm_column_name not in table_definition:
+        return column_name
+    
+    return table_definition[norm_column_name]['target_table_column_name']
+
+
 def get_insert_columns(table_definition, extra_columns):
     insert_columns = []
     for key, column in table_definition.items():
         insert_columns.append(f"[{column['target_table_column_name']}]")
 
     for column in extra_columns:
-        insert_columns.append(f"[{column['column_name']}]")
+        insert_columns.append(f"[{get_target_table_column_name(column['column_name'], table_definition)}]")
 
     return insert_columns
 
@@ -22,7 +30,9 @@ def get_update_values(table_definition, extra_columns):
         update_values.append(f"[{column['target_table_column_name']}] = source.[{column['target_table_column_name']}]")
 
     for column in extra_columns:
-        update_values.append(f"[{column['column_name']}] = {column['value']}")
+        update_values.append(
+            f"[{get_target_table_column_name(column['column_name'], table_definition)}] = {column['value']}"
+        )
 
     return update_values
 

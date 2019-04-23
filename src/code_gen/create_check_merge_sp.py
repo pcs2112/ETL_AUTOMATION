@@ -5,6 +5,14 @@ base_sql_file_name = 'create_merge_check_sp.sql'
 out_file_name_postfix = 'SP.sql'
 
 
+def get_target_table_column_name(column_name, table_definition):
+    norm_column_name = column_name.upper()
+    if norm_column_name not in table_definition:
+        return column_name
+    
+    return table_definition[norm_column_name]['target_table_column_name']
+
+
 def get_is_utc(table_definition, search_column):
     if search_column['is_utc']:
         return True
@@ -25,7 +33,7 @@ def get_target_pk_condition_sql(table_definition, primary_keys):
     for key, column in table_definition.items():
         if key in pk_column_names:
             conditions.append(
-                f"trg.[{column['column_name']}] = src.[{column['target_table_column_name']}]"
+                f"trg.[{column['target_table_column_name']}] = src.[{column['column_name']}]"
             )
     
     return " and \n".join([str(condition) for condition in conditions])
@@ -40,7 +48,7 @@ def get_source_pk_condition_sql(table_definition, primary_keys):
     for key, column in table_definition.items():
         if key in pk_column_names:
             conditions.append(
-                f"trg.[{column['target_table_column_name']}] = src.[{column['column_name']}]"
+                f"trg.[{column['column_name']}] = src.[{column['target_table_column_name']}]"
             )
     
     return " and \n".join([str(condition) for condition in conditions])
@@ -77,7 +85,10 @@ def create_check_merge_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<TARGET_DATABASE>', config['TARGET_DATABASE'])
     sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
     sql = sql.replace('<TARGET_TABLE>', target_table)
-    sql = sql.replace('<TARGET_TABLE_SEARCH_COLUMN>', table_definition[config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'].upper()]['target_table_column_name'])
+    sql = sql.replace(
+        '<TARGET_TABLE_SEARCH_COLUMN>',
+        get_target_table_column_name(config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'], table_definition)
+    )
     sql = sql.replace('<MIN_CALL_DURATION_MINUTES>', str(config['MIN_CALL_DURATION_MINUTES']))
     sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
     sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))

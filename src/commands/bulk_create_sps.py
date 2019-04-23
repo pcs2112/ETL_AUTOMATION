@@ -150,8 +150,9 @@ def create_sp(preference_filename):
                     except Exception as e:
                         print(f"Error on create sp for file {create_sp_filename}.")
                         raise e
-        
-        print(f"{src.code_gen.utils.get_sp_name(pref_config['TARGET_TABLE'], pref_config['STORED_PROCEDURE_NAME'])} stored procedure created.")
+
+        sp_name = pref_config['STORED_PROCEDURE_NAME']
+        print(f"{src.code_gen.utils.get_sp_name(pref_config['TARGET_TABLE'], sp_name)} stored procedure created.")
     
     # Create check merge SP
     with open(create_check_merge_sp_filename) as fp:
@@ -169,6 +170,7 @@ def create_sp(preference_filename):
                         print(f"Error on create check merge sp for file {create_check_merge_sp_filename}.")
                         raise e
         
-        print(f"{src.code_gen.utils.get_sp_name(pref_config['TARGET_TABLE'], pref_config['STORED_PROCEDURE_NAME'])} stored procedure created.")
+        sp_name = f"CHECK_{pref_config['STORED_PROCEDURE_NAME']}"
+        print(f"{src.code_gen.utils.get_sp_name(pref_config['TARGET_TABLE'], sp_name)} stored procedure created.")
     
     close()
