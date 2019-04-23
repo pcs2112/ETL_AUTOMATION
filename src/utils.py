@@ -63,7 +63,7 @@ def serialize_list_for_excel(arr, delimiter="|"):
     out_str = ''
     if len(arr) > 0:
         for value in arr:
-            out_str = serialize_value_for_excel(value) + delimiter
+            out_str += serialize_value_for_excel(value) + delimiter
     
     return out_str.rstrip(delimiter)
 

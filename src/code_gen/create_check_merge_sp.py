@@ -31,7 +31,7 @@ def get_target_pk_condition_sql(table_definition, primary_keys):
     
     conditions = []
     for key, column in table_definition.items():
-        if key in pk_column_names:
+        if column['column_name'] in pk_column_names:
             conditions.append(
                 f"trg.[{column['target_table_column_name']}] = src.[{column['column_name']}]"
             )
@@ -46,7 +46,7 @@ def get_source_pk_condition_sql(table_definition, primary_keys):
     
     conditions = []
     for key, column in table_definition.items():
-        if key in pk_column_names:
+        if column['column_name'] in pk_column_names:
             conditions.append(
                 f"trg.[{column['column_name']}] = src.[{column['target_table_column_name']}]"
             )

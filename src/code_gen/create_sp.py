@@ -82,7 +82,7 @@ def get_pk_condition_sql(table_definition, primary_keys):
         
     conditions = []
     for key, column in table_definition.items():
-        if key in pk_column_names:
+        if column['column_name'] in pk_column_names:
             conditions.append(
                 f"target.[{column['target_table_column_name']}] = source.[{column['target_table_column_name']}]"
             )

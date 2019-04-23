@@ -180,7 +180,7 @@ def get_primary_keys(schema_name, table_name):
     columns = []
     for row in results:
         columns.append({
-            'column_name': row['column_name'].upper(),
+            'column_name': row['column_name'],
             'column_sort_order': 'ASC'
         })
 
@@ -196,15 +196,15 @@ def get_primary_keys_from_str(value):
 
     primary_key_strs = split_string(value, '|')
     for primary_key_str in primary_key_strs:
-        primary_key_str = primary_key_str.lower()
+        primary_key_str = primary_key_str
         primary_key_parts = primary_key_str.split(' ')
         column_name = primary_key_parts[0].strip()
         column_sort_order = primary_key_parts[len(primary_key_parts) - 1].strip()
-        if column_sort_order != 'desc':
+        if column_sort_order.lower() != 'desc':
             column_sort_order = 'asc'
 
         columns.append({
-            'column_name': column_name.upper(),
+            'column_name': column_name,
             'column_sort_order': column_sort_order.upper()
         })
 
@@ -215,6 +215,6 @@ def get_primary_keys_str(columns):
     """ Returns the string of primary keys. """
     out = ''
     for column in columns:
-        out += f"{column['column_name'].upper()} {column['column_sort_order']}|"
+        out += f"{column['column_name']} {column['column_sort_order']}|"
 
     return out.rstrip('|')
