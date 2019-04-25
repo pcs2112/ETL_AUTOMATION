@@ -29,7 +29,7 @@ def set_varchar(column, parts):
 
 
 def set_nvarchar(column, parts):
-    max_length = column['max_length'] / 2
+    max_length = int(column['max_length'] / 2)
     parts.append(f"[{column['data_type']}] ({max_length})")
 
 
@@ -39,10 +39,6 @@ def set_decimal(column, parts):
 
 def set_numeric(column, parts):
     parts.append(f"[{column['data_type']}] ({column['precision']},{column['scale']})")
-
-
-def set_sysname(column, parts):
-    parts.append('[nvarchar](128)')
 
 
 def get_table_definition(table_definition):
@@ -151,5 +147,5 @@ def get_period_start_date(period_start_date):
             period_start_date = period_start_date[0:19]
 
         period_start_date = datetime.strptime(period_start_date, '%Y-%m-%d %H:%M:%S')
-    
+
     return period_start_date

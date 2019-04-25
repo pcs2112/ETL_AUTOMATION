@@ -32,7 +32,7 @@ def get_table_definition(db_name, schema_name, table_name, server_name, excluded
            "JOIN {0}[{1}].sys.types AS P ON C.system_type_id = P.system_type_id "
            "JOIN sys.schemas ss ON (T.schema_id = ss.schema_id) "
            " WHERE  T.type_desc = 'USER_TABLE' and ss.name = ? "
-           "and T.name = ? and P.name != 'timestamp' order by column_id asc").format(server_name, db_name)
+           "and T.name = ? and P.name != 'timestamp' and P.name != 'sysname' order by column_id asc").format(server_name, db_name)
 
     columns = fetch_rows(sql, [schema_name, table_name])
 
