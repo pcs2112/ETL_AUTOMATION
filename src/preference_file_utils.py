@@ -181,7 +181,7 @@ def get_excel_preference_file_data(file_name):
                     'data_type': props[1],
                     'value': props[2]
                 })
-                
+
         # Get the primary keys
         primary_keys = src.db_utils.get_primary_keys_from_str(obj['SOURCE_TABLE_PRIMARY_KEY'])
 
@@ -280,6 +280,7 @@ def create_excel_preference_file_row(pref_config):
             pref_config['SOURCE_SCHEMA'],
             pref_config['SOURCE_TABLE'],
             pref_config['SOURCE_SERVER'],
+            pref_config['DATA_PARTITION_COLUMN'],
             pref_config['SOURCE_EXCLUDED_COLUMNS']
         )
 
@@ -345,7 +346,7 @@ def create_excel_preference_file_row(pref_config):
         )
     else:
         primary_keys = src.db_utils.get_primary_keys_str(primary_keys)
-        
+
     row = [
         pref_config['SOURCE_SERVER'],
         pref_config['SOURCE_DATABASE'],
@@ -395,7 +396,7 @@ def create_excel_preference_file_row(pref_config):
         f"python app.py create_sp C8_{pref_config['STORED_PROCEDURE_SCHEMA']}.{pref_config['STORED_PROCEDURE_NAME']}.json",
         err
     ]
-    
+
     return row
 
 

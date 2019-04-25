@@ -13,13 +13,14 @@ def get_table_exists(schema_name, table_name):
     return True if row else False
 
 
-def get_table_definition(db_name, schema_name, table_name, server_name, excluded_columns=()):
+def get_table_definition(db_name, schema_name, table_name, server_name, data_partition_column_name='', excluded_columns=()):
     """
     Returns the table definition.
     :param str db_name: Database name
     :param str schema_name: Schema name
     :param str table_name: Database table name
     :param str server_name: Server name
+    :param str data_partition_column_name: Data partition column name
     :param list excluded_columns: Columns to exclude
     :return list
     """
@@ -53,6 +54,10 @@ def get_table_definition(db_name, schema_name, table_name, server_name, excluded
             column['target_table_column_name'] = target_table_column_prefix + column['column_name']
         else:
             column['target_table_column_name'] = column['column_name']
+
+        # Update the data type for the data partition column
+        if data_partition_column_name != '' and column['column_name'].upper() == data_partition_column_name.upper():
+            column['data_type'] = 'datetime'
 
         out_columns[column['column_name'].upper()] = column
 
