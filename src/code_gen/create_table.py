@@ -10,13 +10,19 @@ def get_target_table_column_name(column_name, table_definition):
     norm_column_name = column_name.upper()
     if norm_column_name not in table_definition:
         return column_name
-    
+
     return table_definition[norm_column_name]['target_table_column_name']
-    
+
 
 def create_table(config, table_definition):
     # Get the base sql for creating a table
     base_sql = src.utils.get_base_sql_code(base_sql_file_name)
+
+    # Variables used to determine if the data partition column are in the PK
+    data_partition_in_pk = False
+    search_column_in_pk = False
+    data_partition_column_name = config['DATA_PARTITION_COLUMN']
+    search_column_name = config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
 
     # Get the primary keys
     primary_keys = config['SOURCE_TABLE_PRIMARY_KEY']
@@ -41,51 +47,46 @@ def create_table(config, table_definition):
             f"{primary_key['column_sort_order']}"
         )
 
+        if data_partition_column_name != '' and primary_key['column_name'].lower() == data_partition_column_name.lower():
+            data_partition_in_pk = True
+
+        if search_column_name != '' and primary_key['column_name'].lower() == search_column_name:
+            search_column_in_pk = True
+
     if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
         for extra_key_column in config['TARGET_TABLE_EXTRA_KEY_COLUMNS']:
             target_tbl_key_cols.append(get_target_table_column_name(extra_key_column, table_definition))
 
-    if config['DATA_PARTITION_COLUMN'] != '':
+    if not data_partition_in_pk and data_partition_column_name != '':
         target_tbl_key_cols.append(
-            f"[{get_target_table_column_name(config['DATA_PARTITION_COLUMN'], table_definition)} DESC"
+            f"[{get_target_table_column_name(data_partition_column_name, table_definition)} DESC"
         )
 
     target_tbl_key_cols_sql = ",\n".join(["\t\t" + str(key_col) for key_col in target_tbl_key_cols])
     sql = sql.replace('<TARGET_TABLE_KEY_COLUMNS>', target_tbl_key_cols_sql)
-    
+
     # Set the target table primary key index key columns
-    target_tbl_pk_index_key_cols = [
-        f"[{get_target_table_column_name(config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'], table_definition)}] ASC"
-    ]
-    
-    # Add the target table primary keys
-    data_partition_in_pk = False
-    index_partition_in_pk = False
+    target_tbl_pk_index_key_cols = []
+
+    # Add the target table primary keys to the target table pk index
     for primary_key in primary_keys:
         target_tbl_pk_index_key_cols.append(
             f"[{get_target_table_column_name(primary_key['column_name'], table_definition)}] "
             f"{primary_key['column_sort_order']}"
         )
-        
-        if config['DATA_PARTITION_COLUMN'] != '' \
-                and primary_key['column_name'].lower() == config['DATA_PARTITION_COLUMN'].lower():
-            data_partition_in_pk = True
-            
-        if config['INDEX_PARTITION_COLUMN'] != '' \
-                and primary_key['column_name'].lower() == config['INDEX_PARTITION_COLUMN'].lower():
-            index_partition_in_pk = True
-        
-    # Add the partition columns to the target table pk key columns
-    if config['DATA_PARTITION_COLUMN'] != '' and not data_partition_in_pk:
+
+    # Add the search column to the target table pk index
+    if search_column_name != '' and not search_column_in_pk and search_column_name != data_partition_column_name:
         target_tbl_pk_index_key_cols.append(
-            f"{get_target_table_column_name(config['DATA_PARTITION_COLUMN'], table_definition)} ASC"
+            f"[{get_target_table_column_name(search_column_name, table_definition)}] ASC"
         )
-        
-    if config['INDEX_PARTITION_COLUMN'] != '' and not index_partition_in_pk:
+
+    # Add the partition column to the target table pk index
+    if data_partition_column_name != '' and not data_partition_in_pk:
         target_tbl_pk_index_key_cols.append(
-            f"{get_target_table_column_name(config['INDEX_PARTITION_COLUMN'], table_definition)} ASC"
+            f"{get_target_table_column_name(data_partition_column_name, table_definition)} ASC"
         )
-        
+
     target_tbl_pk_index_key_cols_sql = ",\n".join(
         ["\t\t" + str(pk_index_key_col) for pk_index_key_col in target_tbl_pk_index_key_cols]
     )
@@ -102,13 +103,13 @@ def create_table(config, table_definition):
     sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
 
     # Set the data partition name
-    if config['DATA_PARTITION_COLUMN'] == '':
+    if data_partition_column_name == '':
         sql = sql.replace('<PARTITION_NAME>', f"[{config['DATA_PARTITION_FUNCTION']}]")
     else:
         sql = sql.replace(
             '<PARTITION_NAME>',
             f"{config['DATA_PARTITION_FUNCTION']}"
-            f"({get_target_table_column_name(config['DATA_PARTITION_COLUMN'], table_definition)})"
+            f"({get_target_table_column_name(data_partition_column_name, table_definition)})"
         )
 
     # Set the index partition name
