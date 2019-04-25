@@ -29,7 +29,7 @@ def set_varchar(column, parts):
 
 
 def set_nvarchar(column, parts):
-    max_length = int(column['max_length'] / 2)
+    max_length = column['max_length'] // 2
     parts.append(f"[{column['data_type']}] ({max_length})")
 
 

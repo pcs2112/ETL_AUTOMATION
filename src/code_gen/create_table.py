@@ -33,7 +33,7 @@ def create_table(config, table_definition):
     target_tbl_cols = src.code_gen.utils.get_target_table_definition(table_definition)
     for col in config['TARGET_TABLE_EXTRA_COLUMNS']:
         target_tbl_cols.append(
-            f"[{get_target_table_column_name(col['column_name'], table_definition)} {col['data_type']}"
+            f"[{get_target_table_column_name(col['column_name'], table_definition)}] {col['data_type']}"
         )
 
     target_table_cols_sql = ",\n".join(["\t" + str(col) for col in target_tbl_cols])
@@ -59,7 +59,7 @@ def create_table(config, table_definition):
 
     if not data_partition_in_pk and data_partition_column_name != '':
         target_tbl_key_cols.append(
-            f"[{get_target_table_column_name(data_partition_column_name, table_definition)} DESC"
+            f"[{get_target_table_column_name(data_partition_column_name, table_definition)}] DESC"
         )
 
     target_tbl_key_cols_sql = ",\n".join(["\t\t" + str(key_col) for key_col in target_tbl_key_cols])
@@ -78,7 +78,7 @@ def create_table(config, table_definition):
     # Add the partition column to the target table pk index
     if data_partition_column_name != '' and not data_partition_in_pk:
         target_tbl_pk_index_key_cols.append(
-            f"{get_target_table_column_name(data_partition_column_name, table_definition)} ASC"
+            f"[{get_target_table_column_name(data_partition_column_name, table_definition)}] ASC"
         )
 
     # Add the search column to the target table pk index
