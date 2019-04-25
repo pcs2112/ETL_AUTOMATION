@@ -75,16 +75,16 @@ def create_table(config, table_definition):
             f"{primary_key['column_sort_order']}"
         )
 
-    # Add the search column to the target table pk index
-    if search_column_name != '' and not search_column_in_pk and search_column_name != data_partition_column_name:
-        target_tbl_pk_index_key_cols.append(
-            f"[{get_target_table_column_name(search_column_name, table_definition)}] ASC"
-        )
-
     # Add the partition column to the target table pk index
     if data_partition_column_name != '' and not data_partition_in_pk:
         target_tbl_pk_index_key_cols.append(
             f"{get_target_table_column_name(data_partition_column_name, table_definition)} ASC"
+        )
+
+    # Add the search column to the target table pk index
+    if search_column_name != '' and not search_column_in_pk and search_column_name != data_partition_column_name:
+        target_tbl_pk_index_key_cols.append(
+            f"[{get_target_table_column_name(search_column_name, table_definition)}] ASC"
         )
 
     target_tbl_pk_index_key_cols_sql = ",\n".join(

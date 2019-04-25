@@ -57,8 +57,11 @@ def create_sp(preference_filename=''):
 
     create_table_filename = src.code_gen.create_table(pref_config, table_definition)
     create_sp_filename = src.code_gen.create_sp(pref_config, table_definition, table_counts)
+    create_check_merge_sp_filename = src.code_gen.create_check_merge_sp(pref_config, table_definition, table_counts)
+
     print('Please locate your DDL files at:')
     print(f"Create table DDL -> {create_table_filename}")
     print(f"Create stored procedure DDL -> {create_sp_filename}")
+    print(f"Create check merge stored procedure DDL -> {create_check_merge_sp_filename}")
     print("")
     close()
