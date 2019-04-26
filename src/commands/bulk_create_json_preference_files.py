@@ -17,7 +17,7 @@ def bulk_create_json_preference_files(in_filename):
         index_sql_files.append(src.code_gen.create_column_index(
             config['SOURCE_SCHEMA'],
             config['SOURCE_TABLE'],
-            config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'],
+            '' if config['SOURCE_TABLE_SEARCH_COLUMN'] is None else config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'],
             config['ROW_COUNT'],
             config['ROW_MIN_DATE'],
             config['ROW_MAX_DATE'],
