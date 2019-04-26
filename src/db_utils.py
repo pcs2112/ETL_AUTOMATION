@@ -136,7 +136,7 @@ def column_index_exists(schema_name, table_name, column_name):
     return row is not None
 
 
-def get_record_counts(schema_name, table_name, column_name):
+def get_record_counts(schema_name, table_name, column_name=''):
     """
     Returns the records counts for the specified table.
     :param str schema_name: Schema name
@@ -144,15 +144,26 @@ def get_record_counts(schema_name, table_name, column_name):
     :param str column_name: Search column name
     :return list
     """
-    sql = """
-    select
-        count(*) COUNT,
-        min({2}) MIN_VALUE,
-        max({2}) MAX_VALUE,
-        datediff(month, min({2}), max({2})) MONTH_CNT
-    from
-        {0}.{1} with(nolock);
-    """
+    if column_name == '':
+        sql = """
+            SELECT
+                count(*) AS 'COUNT',
+                null AS 'MIN_VALUE',
+                null AS 'MAX_VALUE',
+                null AS 'MONTH_CNT'
+            FROM
+                {0}.{1} with(nolock);
+            """
+    else:
+        sql = """
+            SELECT
+                count(*) AS 'COUNT',
+                min({2}) AS 'MIN_VALUE',
+                max({2}) AS 'MAX_VALUE',
+                datediff(MONTH, MIN({2}), MAX({2})) AS 'MONTH_CNT'
+            FROM
+                {0}.{1} WITH(nolock);
+        """
 
     return fetch_row(sql.format(schema_name, table_name, column_name))
 
@@ -164,7 +175,7 @@ def get_table_record_count(schema_name, table_name):
     :param str table_name: Database table name
     :return list
     """
-    sql = "select count(*) COUNT from {0}.{1} with(nolock);"
+    sql = "select count(*) AS 'COUNT' FROM {0}.{1} with(nolock);"
     return fetch_row(sql.format(schema_name, table_name))
 
 
