@@ -185,6 +185,14 @@ def get_excel_preference_file_data(file_name):
         # Get the primary keys
         primary_keys = src.db_utils.get_primary_keys_from_str(obj['SOURCE_TABLE_PRIMARY_KEY'])
 
+        # Get the search column
+        search_column = None
+        if not src.utils.is_empty(obj['SOURCE_TABLE_SEARCH_COLUMN_NAME']):
+            search_column = {
+                'column_name': obj['SOURCE_TABLE_SEARCH_COLUMN_NAME'],
+                'is_utc': obj['SOURCE_TABLE_SEARCH_COLUMN_IS_UTC'] == 'true'
+            }
+
         set_day_start = src.utils.get_default_value(obj.get('SET_DAY_START', ''), 'false') == 'true'
         target_table_exists = src.utils.get_default_value(obj.get('TARGET_TABLE_EXISTS', ''), 'false') == 'true'
 
@@ -199,10 +207,7 @@ def get_excel_preference_file_data(file_name):
             'SOURCE_SCHEMA': obj['SOURCE_SCHEMA'],
             'SOURCE_TABLE': obj['SOURCE_TABLE'],
             'SOURCE_DATA_MART': obj['SOURCE_DATA_MART'],
-            'SOURCE_TABLE_SEARCH_COLUMN': {
-                'column_name': obj['SOURCE_TABLE_SEARCH_COLUMN_NAME'],
-                'is_utc': obj['SOURCE_TABLE_SEARCH_COLUMN_IS_UTC'] == 'true'
-            },
+            'SOURCE_TABLE_SEARCH_COLUMN': search_column,
             'SOURCE_TABLE_SEARCH_CONDITION': obj['SOURCE_TABLE_SEARCH_CONDITION'],
             'SOURCE_TABLE_PRIMARY_KEY': primary_keys,
             'SOURCE_EXCLUDED_COLUMNS': src.utils.split_string(obj['SOURCE_EXCLUDED_COLUMNS'], '|'),
@@ -261,18 +266,25 @@ def create_excel_preference_file_row(pref_config):
         'DB_TRUSTED_CONNECTION': pref_config['SOURCE_TRUSTED_CONNECTION']
     })
 
-    err = ''
     search_column_name = ''
-    if 'column_name' in pref_config['SOURCE_TABLE_SEARCH_COLUMN']:
-        search_column_name = pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
     search_column_exists = True
     search_column_has_index = True
+    err = ''
     counts = {
         'count': '',
         'min_value': '',
         'max_value': '',
         'month_cnt': ''
     }
+
+    # Check the search column exists
+    search_column = pref_config['SOURCE_TABLE_SEARCH_COLUMN']
+    if not src.utils.is_empty(search_column) and 'column_name' in search_column:
+        search_column_name = search_column['column_name']
+
+    if src.utils.is_empty(search_column_name):
+        search_column_exists = False
+        search_column_has_index = False
 
     try:
         table_definition = src.db_utils.get_table_definition(
@@ -299,13 +311,12 @@ def create_excel_preference_file_row(pref_config):
     except Exception as e:
         err = str(e)
 
-    if search_column_exists:
-        try:
-            counts = src.db_utils.get_record_counts(
-                pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'], search_column_name
-            )
-        except Exception as e:
-            err = str(e)
+    try:
+        counts = src.db_utils.get_record_counts(
+            pref_config['SOURCE_SCHEMA'], pref_config['SOURCE_TABLE'], search_column_name
+        )
+    except Exception as e:
+        err = str(e)
 
     close()
 
@@ -357,8 +368,8 @@ def create_excel_preference_file_row(pref_config):
         pref_config['SOURCE_SCHEMA'],
         pref_config['SOURCE_TABLE'],
         pref_config['SOURCE_DATA_MART'],
-        search_column_name,
-        'true' if search_column_exists and pref_config['SOURCE_TABLE_SEARCH_COLUMN']['is_utc'] else 'false',
+        '' if src.utils.is_empty(search_column_name) else search_column_name,
+        'true' if search_column_exists and search_column['is_utc'] else 'false',
         pref_config['SOURCE_TABLE_SEARCH_CONDITION'],
         primary_keys,
         src.utils.serialize_list_for_excel(pref_config['SOURCE_EXCLUDED_COLUMNS']),
@@ -474,7 +485,7 @@ def validate_preference_file_config(config, table_definition):
         search_column_name = search_column['column_name']
         if src.utils.is_empty(search_column_name):
             raise SearchColumnInvalidValue('SOURCE_TABLE_SEARCH_COLUMN: column name can\'t be empty.')
-    
+
         if not src.code_gen.utils.get_column_exists(table_definition, search_column_name):
             raise SearchColumnNotFound(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
 
@@ -487,7 +498,7 @@ def validate_preference_file_config(config, table_definition):
             )
         except Exception as e:
             raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
-    
+
         if not search_column_index_exists:
             raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
 

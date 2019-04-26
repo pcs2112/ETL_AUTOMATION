@@ -14,15 +14,16 @@ def bulk_create_sps(in_filename):
     data = src.preference_file_utils.get_excel_preference_file_data(filename)
     index_sql_files = []
     for config in data:
-        index_sql_files.append(src.code_gen.create_column_index(
-            config['SOURCE_SCHEMA'],
-            config['SOURCE_TABLE'],
-            config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'],
-            config['ROW_COUNT'],
-            config['ROW_MIN_DATE'],
-            config['ROW_MAX_DATE'],
-            config['MONTH_COUNT']
-        ))
+        if config['SOURCE_TABLE_SEARCH_COLUMN']:
+            index_sql_files.append(src.code_gen.create_column_index(
+                config['SOURCE_SCHEMA'],
+                config['SOURCE_TABLE'],
+                config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'],
+                config['ROW_COUNT'],
+                config['ROW_MIN_DATE'],
+                config['ROW_MAX_DATE'],
+                config['MONTH_COUNT']
+            ))
 
     print("")
     print('The following indices file was created:')
@@ -86,7 +87,7 @@ def create_sp(preference_filename):
     table_counts = src.db_utils.get_record_counts(
         pref_config['SOURCE_SCHEMA'],
         pref_config['SOURCE_TABLE'],
-        pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
+        '' if pref_config['SOURCE_TABLE_SEARCH_COLUMN'] is None else pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
     )
 
     create_table_filename = src.code_gen.create_table(pref_config, table_definition)

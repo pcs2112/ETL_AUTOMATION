@@ -9,7 +9,7 @@ def get_target_table_column_name(column_name, table_definition):
     norm_column_name = column_name.upper()
     if norm_column_name not in table_definition:
         return column_name
-    
+
     return table_definition[norm_column_name]['target_table_column_name']
 
 
@@ -49,12 +49,14 @@ def get_insert_values(table_definition, extra_columns):
 
 
 def get_is_utc(table_definition, search_column):
-    if search_column['is_utc']:
-        return True
-
-    for key, column in table_definition.items():
-        if column['column_name'] == search_column['column_name'] and 'utc' in column['column_name'].lower():
+    print(search_column)
+    if search_column:
+        if search_column['is_utc']:
             return True
+
+        for key, column in table_definition.items():
+            if column['column_name'] == search_column['column_name'] and 'utc' in column['column_name'].lower():
+                return True
 
     return False
 
@@ -65,9 +67,11 @@ def get_update_match_check_columns_sql(table_definition, match_check_columns):
         if column['column_name'] in match_check_columns:
             if column['is_nullable'] == 1:
                 conditions.append(
-                    f"(target.[{column['target_table_column_name']}] is NULL and source.[{column['target_table_column_name']}] is NOT NULL)")
+                    f"(target.[{column['target_table_column_name']}] is NULL and source.[{column['target_table_column_name']}] is NOT NULL)"
+                )
                 conditions.append(
-                    f"(target.[{column['target_table_column_name']}] is NOT NULL and source.[{column['target_table_column_name']}] is NULL)")
+                    f"(target.[{column['target_table_column_name']}] is NOT NULL and source.[{column['target_table_column_name']}] is NULL)"
+                )
 
             conditions.append(
                 f"target.[{column['target_table_column_name']}] != source.[{column['target_table_column_name']}]")
@@ -79,23 +83,37 @@ def get_pk_condition_sql(table_definition, primary_keys):
     pk_column_names = []
     for pk in primary_keys:
         pk_column_names.append(pk['column_name'])
-        
+
     conditions = []
     for key, column in table_definition.items():
         if column['column_name'] in pk_column_names:
             conditions.append(
                 f"target.[{column['target_table_column_name']}] = source.[{column['target_table_column_name']}]"
             )
-            
+
     return " and \n".join([str(condition) for condition in conditions])
+
+
+def get_search_condition(search_column, search_condition):
+    if search_column:
+        sql = src.utils.get_base_sql_code('search_condition_section.sql')
+        sql = sql.replace('<SOURCE_TABLE_SEARCH_COLUMN>', search_column['column_name'])
+    else:
+        sql = '1 = 1 <SOURCE_TABLE_SEARCH_CONDITION>'
+
+    sql = sql.replace('<SOURCE_TABLE_SEARCH_CONDITION>', search_condition)
+
+    return sql
 
 
 def create_sp(config, table_definition, table_counts=None):
     # Get the base sql for creating a table
     sql = src.utils.get_base_sql_code(base_sql_file_name)
 
+    search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
+
     # Get is UTC
-    is_utc = get_is_utc(table_definition, config['SOURCE_TABLE_SEARCH_COLUMN'])
+    is_utc = get_is_utc(table_definition, search_column)
 
     # Set placeholder values
     target_table = src.code_gen.utils.get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
@@ -115,7 +133,10 @@ def create_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<SOURCE_SCHEMA>', config['SOURCE_SCHEMA'])
     sql = sql.replace('<SOURCE_TABLE>', config['SOURCE_TABLE'])
     sql = sql.replace('<SOURCE_DATA_MART>', config['SOURCE_DATA_MART'])
-    sql = sql.replace('<SOURCE_TABLE_SEARCH_COLUMN>', config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'])
+
+    if search_column:
+        sql = sql.replace('<SOURCE_TABLE_SEARCH_COLUMN>', search_column['column_name'])
+
     sql = sql.replace('<TARGET_SERVER>', config['TARGET_SERVER'])
     sql = sql.replace('<TARGET_DATABASE>', config['TARGET_DATABASE'])
     sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
@@ -127,7 +148,7 @@ def create_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<DATE_CREATED>', src.utils.get_current_timestamp())
     sql = sql.replace('<IS_UTC>', str(1 if is_utc else 0))
     sql = sql.replace('<SET_DAY_START>', str(1 if config['SET_DAY_START'] else 0))
-    
+
     period_start_date = src.code_gen.utils.get_period_start_date(
         '' if table_counts is None else table_counts['min_value']
     )
@@ -181,16 +202,19 @@ def create_sp(config, table_definition, table_counts=None):
     sql = sql.replace('<TARGET_TABLE_INSERT_VALUES>', target_table_insert_values_sql)
 
     # Set the target table search condition
-    sql = sql.replace('<SOURCE_TABLE_SEARCH_CONDITION>', config['SOURCE_TABLE_SEARCH_CONDITION'])
+    sql = sql.replace('<SOURCE_TABLE_SEARCH_CONDITION>', get_search_condition(
+        search_column,
+        config['SOURCE_TABLE_SEARCH_CONDITION']
+    ))
 
     # Set the match check columns
     if len(config['UPDATE_MATCH_CHECK_COLUMNS']) > 0:
-        sql = sql.replace('<MATCH_SECTION>', src.utils.get_base_sql_code('create_sp_match_section.sql'))
+        sql = sql.replace('<MATCH_SECTION>', src.utils.get_base_sql_code('match_section.sql'))
         sql = sql.replace('<UPDATE_MATCH_CHECK_COLUMNS>', get_update_match_check_columns_sql(
             table_definition, config['UPDATE_MATCH_CHECK_COLUMNS']
         ))
     else:
-        sql = sql.replace('<MATCH_SECTION>', src.utils.get_base_sql_code('create_sp_match_section_empty.sql'))
+        sql = sql.replace('<MATCH_SECTION>', src.utils.get_base_sql_code('match_section_empty.sql'))
 
     # Create the file and return its pathC8_<STORED_PROCEDURE_SCHEMA>.<STORED_PROCEDURE_NAME>
     return src.utils.create_sql_file(

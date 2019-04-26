@@ -49,10 +49,15 @@ def create_sp(preference_filename=''):
         return
 
     # Get table counts
+    search_column_name = ''
+    search_column = pref_config['SOURCE_TABLE_SEARCH_COLUMN']
+    if search_column:
+        search_column_name = search_column['column_name']
+
     table_counts = src.db_utils.get_record_counts(
         pref_config['SOURCE_SCHEMA'],
         pref_config['SOURCE_TABLE'],
-        pref_config['SOURCE_TABLE_SEARCH_COLUMN']['column_name']
+        search_column_name
     )
 
     create_table_filename = src.code_gen.create_table(pref_config, table_definition)

@@ -9,18 +9,19 @@ def get_target_table_column_name(column_name, table_definition):
     norm_column_name = column_name.upper()
     if norm_column_name not in table_definition:
         return column_name
-    
+
     return table_definition[norm_column_name]['target_table_column_name']
 
 
 def get_is_utc(table_definition, search_column):
-    if search_column['is_utc']:
-        return True
-    
-    for key, column in table_definition.items():
-        if column['column_name'] == search_column['column_name'] and 'utc' in column['column_name'].lower():
+    if search_column:
+        if search_column['is_utc']:
             return True
-    
+
+        for key, column in table_definition.items():
+            if column['column_name'] == search_column['column_name'] and 'utc' in column['column_name'].lower():
+                return True
+
     return False
 
 
@@ -28,14 +29,14 @@ def get_target_pk_condition_sql(table_definition, primary_keys):
     pk_column_names = []
     for pk in primary_keys:
         pk_column_names.append(pk['column_name'])
-    
+
     conditions = []
     for key, column in table_definition.items():
         if column['column_name'] in pk_column_names:
             conditions.append(
                 f"trg.[{column['target_table_column_name']}] = src.[{column['column_name']}]"
             )
-    
+
     return " and \n".join([str(condition) for condition in conditions])
 
 
@@ -43,24 +44,54 @@ def get_source_pk_condition_sql(table_definition, primary_keys):
     pk_column_names = []
     for pk in primary_keys:
         pk_column_names.append(pk['column_name'])
-    
+
     conditions = []
     for key, column in table_definition.items():
         if column['column_name'] in pk_column_names:
             conditions.append(
                 f"trg.[{column['column_name']}] = src.[{column['target_table_column_name']}]"
             )
-    
+
     return " and \n".join([str(condition) for condition in conditions])
+
+
+def get_check_merge_sql(table_definition, search_column, pks):
+    if search_column:
+        sql = src.utils.get_base_sql_code('check_merge_section.sql')
+        sql = sql.replace(
+            '<TARGET_TABLE_SEARCH_COLUMN>',
+            get_target_table_column_name(search_column['column_name'], table_definition)
+        )
+    else:
+        sql = src.utils.get_base_sql_code('check_merge_section_no_date_condition.sql')
+
+    # Set the target pk condition
+    sql = sql.replace('<TARGET_PK_CONDITION>', get_target_pk_condition_sql(
+        table_definition, pks
+    ))
+
+    # Set the source pk condition
+    sql = sql.replace('<SOURCE_PK_CONDITION>', get_source_pk_condition_sql(
+        table_definition, pks
+    ))
+
+    return sql
 
 
 def create_check_merge_sp(config, table_definition, table_counts=None):
     # Get the base sql for creating a table
     sql = src.utils.get_base_sql_code(base_sql_file_name)
-    
+
+    search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
+
     # Get is UTC
-    is_utc = get_is_utc(table_definition, config['SOURCE_TABLE_SEARCH_COLUMN'])
-    
+    is_utc = get_is_utc(table_definition, search_column)
+
+    sql = sql.replace(
+        '<CHECK_MERGE_SECTION>',
+        get_check_merge_sql(table_definition, search_column, config['SOURCE_TABLE_PRIMARY_KEY'])
+    )
+
     # Set placeholder values
     target_table = src.code_gen.utils.get_target_table_name(config['SOURCE_TABLE'], config['TARGET_TABLE'])
     sql = sql.replace(
@@ -75,20 +106,19 @@ def create_check_merge_sp(config, table_definition, table_counts=None):
         sql = sql.replace('<SOURCE_SERVER_SELECT>', f"[{config['SOURCE_SERVER']}].")
     else:
         sql = sql.replace('<SOURCE_SERVER_SELECT>', '')
-    
+
     sql = sql.replace('<SOURCE_DATABASE>', config['SOURCE_DATABASE'])
     sql = sql.replace('<SOURCE_SCHEMA>', config['SOURCE_SCHEMA'])
     sql = sql.replace('<SOURCE_TABLE>', config['SOURCE_TABLE'])
     sql = sql.replace('<SOURCE_DATA_MART>', config['SOURCE_DATA_MART'])
-    sql = sql.replace('<SOURCE_TABLE_SEARCH_COLUMN>', config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'])
+
+    if search_column:
+        sql = sql.replace('<SOURCE_TABLE_SEARCH_COLUMN>', search_column['column_name'])
+
     sql = sql.replace('<TARGET_SERVER>', config['TARGET_SERVER'])
     sql = sql.replace('<TARGET_DATABASE>', config['TARGET_DATABASE'])
     sql = sql.replace('<TARGET_SCHEMA>', config['TARGET_SCHEMA'])
     sql = sql.replace('<TARGET_TABLE>', target_table)
-    sql = sql.replace(
-        '<TARGET_TABLE_SEARCH_COLUMN>',
-        get_target_table_column_name(config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'], table_definition)
-    )
     sql = sql.replace('<MIN_CALL_DURATION_MINUTES>', str(config['MIN_CALL_DURATION_MINUTES']))
     sql = sql.replace('<MAX_CALL_DURATION_MINUTES>', str(config['MAX_CALL_DURATION_MINUTES']))
     sql = sql.replace('<ETL_PRIORITY>', str(config['ETL_PRIORITY']))
@@ -100,17 +130,7 @@ def create_check_merge_sp(config, table_definition, table_counts=None):
         '' if table_counts is None else table_counts['min_value']
     )
     sql = sql.replace('<PERIOD_START_DATE>', period_start_date.strftime('%Y-%m-%d'))
-    
-    # Set the target pk condition
-    sql = sql.replace('<TARGET_PK_CONDITION>', get_target_pk_condition_sql(
-        table_definition, config['SOURCE_TABLE_PRIMARY_KEY']
-    ))
 
-    # Set the source pk condition
-    sql = sql.replace('<SOURCE_PK_CONDITION>', get_source_pk_condition_sql(
-        table_definition, config['SOURCE_TABLE_PRIMARY_KEY']
-    ))
-    
     # Create the file and return its path C8_<STORED_PROCEDURE_SCHEMA>.CHECK_<STORED_PROCEDURE_NAME>
     return src.utils.create_sql_file(
         f"C8_{config['STORED_PROCEDURE_SCHEMA']}.CHECK_{config['STORED_PROCEDURE_NAME']}_{out_file_name_postfix}", sql
