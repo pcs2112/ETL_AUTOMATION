@@ -464,6 +464,7 @@ def validate_preference_file_config(config, table_definition):
             raise ValueError(f"{arr_arg} must be an array.")
 
     # Validate the search column
+    search_colum
     search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
     if not isinstance(search_column, dict) or 'column_name' not in search_column or 'is_utc' not in search_column:
         raise SearchColumnInvalidValue(
