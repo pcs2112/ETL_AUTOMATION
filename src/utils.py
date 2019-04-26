@@ -101,3 +101,11 @@ def get_current_timestamp(format_str="%Y-%m-%d %H:%M"):
 def get_filename_date_postfix():
     """ Returns a timestamp string append to file names. """
     return get_current_timestamp('%Y%m%d_%H%M%S')
+
+
+def is_empty(value):
+    """ Checks if a value is empty. """
+    if isinstance(value, str):
+        value = value.strip()
+    
+    return False if value else True

@@ -465,30 +465,31 @@ def validate_preference_file_config(config, table_definition):
 
     # Validate the search column
     search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
-    if not isinstance(search_column, dict) or 'column_name' not in search_column or 'is_utc' not in search_column:
-        raise SearchColumnInvalidValue(
-            'SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.'
-        )
+    if not src.utils.is_empty(search_column):
+        if not isinstance(search_column, dict) or 'column_name' not in search_column or 'is_utc' not in search_column:
+            raise SearchColumnInvalidValue(
+                'SOURCE_TABLE_SEARCH_COLUMN must be a dictionary with the column_name and is_utc properties.'
+            )
 
-    search_column_name = search_column['column_name']
-    if search_column_name == '':
-        raise SearchColumnInvalidValue('SOURCE_TABLE_SEARCH_COLUMN: column name can\'t be empty.')
+        search_column_name = search_column['column_name']
+        if src.utils.is_empty(search_column_name):
+            raise SearchColumnInvalidValue('SOURCE_TABLE_SEARCH_COLUMN: column name can\'t be empty.')
+    
+        if not src.code_gen.utils.get_column_exists(table_definition, search_column_name):
+            raise SearchColumnNotFound(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
 
-    if not src.code_gen.utils.get_column_exists(table_definition, search_column_name):
-        raise SearchColumnNotFound(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" is an invalid column.")
-
-    # Check the index exists
-    try:
-        search_column_index_exists = src.db_utils.column_index_exists(
-            config['SOURCE_SCHEMA'],
-            config['SOURCE_TABLE'],
-            search_column_name
-        )
-    except Exception as e:
-        raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
-
-    if not search_column_index_exists:
-        raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
+        # Check the index exists
+        try:
+            search_column_index_exists = src.db_utils.column_index_exists(
+                config['SOURCE_SCHEMA'],
+                config['SOURCE_TABLE'],
+                search_column_name
+            )
+        except Exception as e:
+            raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: {str(e)}")
+    
+        if not search_column_index_exists:
+            raise SearchColumnNoIndex(f"SOURCE_TABLE_SEARCH_COLUMN: \"{search_column_name}\" does not have an index.")
 
     # Validate the update check columns
     if len(config['TARGET_TABLE_EXTRA_KEY_COLUMNS']) > 0:
