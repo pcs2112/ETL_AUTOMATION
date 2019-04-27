@@ -102,7 +102,7 @@ AS
 	DECLARE @ErrorMessage nvarchar(4000);
 	DECLARE @TryCatchError_ID INTEGER = 0;
 
-	DECLARE @My_SP_NAME varchar(50);
+	DECLARE @My_SP_NAME varchar(128);
 	SET @My_SP_NAME = OBJECT_SCHEMA_NAME(@@PROCID) + '.' + OBJECT_NAME(@@PROCID);
 
 	--  The Source Names are either LOCAL or REMOTE,  when REMOTE, manually enter the named automatically
