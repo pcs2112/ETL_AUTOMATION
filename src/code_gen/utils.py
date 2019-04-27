@@ -25,7 +25,7 @@ def set_char(column, parts):
 
 def set_varchar(column, parts):
     max_length = 'max' if column['max_length'] < 1 else column['max_length']
-    parts.append(f"[{column['sdata_type']}] ({max_length})")
+    parts.append(f"[{column['data_type']}] ({max_length})")
 
 
 def set_nvarchar(column, parts):
