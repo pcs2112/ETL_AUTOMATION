@@ -27,6 +27,10 @@ def create_column_index(schema_name, table_name, column_name, row_count, row_min
     sql = sql.replace('<ROW_MIN_DATE>', str(row_min_date))
     sql = sql.replace('<ROW_MAX_DATE>', str(row_max_date))
     sql = sql.replace('<MONTH_COUNT>', str(month_count))
+    sql = sql.replace(
+        '<MESSAGE>',
+        '' if column_name == '' else '-- **************** NOTE :  No datetime column to index'
+    )
     
     return src.utils.create_sql_file(
         f"C8_{schema_name}.{table_name}_{column_name}_{out_file_name_postfix}_{src.utils.get_filename_date_postfix()}",
