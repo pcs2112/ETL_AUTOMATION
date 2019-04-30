@@ -1,6 +1,7 @@
 import ntpath
 import src.preference_file_utils
 import src.code_gen
+import src.db_utils
 
 
 def bulk_create_json_preference_files(in_filename):
@@ -14,15 +15,28 @@ def bulk_create_json_preference_files(in_filename):
     data = src.preference_file_utils.get_excel_preference_file_data(filename)
     index_sql_files = []
     for config in data:
-        index_sql_files.append(src.code_gen.create_column_index(
-            config['SOURCE_SCHEMA'],
-            config['SOURCE_TABLE'],
-            '' if config['SOURCE_TABLE_SEARCH_COLUMN'] is None else config['SOURCE_TABLE_SEARCH_COLUMN']['column_name'],
-            config['ROW_COUNT'],
-            config['ROW_MIN_DATE'],
-            config['ROW_MAX_DATE'],
-            config['MONTH_COUNT']
-        ))
+        search_column_index_exists = False
+        search_column = config['SOURCE_TABLE_SEARCH_COLUMN']
+        if search_column:
+            try:
+                search_column_index_exists = src.db_utils.column_index_exists(
+                    config['SOURCE_SCHEMA'],
+                    config['SOURCE_TABLE'],
+                    search_column['column_name']
+                )
+            except Exception:
+                pass
+            
+        if not search_column_index_exists:
+            index_sql_files.append(src.code_gen.create_column_index(
+                config['SOURCE_SCHEMA'],
+                config['SOURCE_TABLE'],
+                '' if search_column['column_name'] is None else search_column['column_name']['column_name'],
+                config['ROW_COUNT'],
+                config['ROW_MIN_DATE'],
+                config['ROW_MAX_DATE'],
+                config['MONTH_COUNT']
+            ))
     
     print("")
     print('The following indices file was created:')
