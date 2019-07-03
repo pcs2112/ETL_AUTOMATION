@@ -31,7 +31,7 @@ def bulk_create_json_preference_files(in_filename):
             index_sql_files.append(src.code_gen.create_column_index(
                 config['SOURCE_SCHEMA'],
                 config['SOURCE_TABLE'],
-                '' if search_column['column_name'] is None else search_column['column_name']['column_name'],
+                '' if search_column is None else search_column['column_name'],
                 config['ROW_COUNT'],
                 config['ROW_MIN_DATE'],
                 config['ROW_MAX_DATE'],
