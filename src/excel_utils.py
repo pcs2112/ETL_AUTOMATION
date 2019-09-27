@@ -2,6 +2,10 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 
+CELL_MAX_WIDTH = 300
+CELL_PADDING = 5
+
+
 def read_workbook(file_path):
     """ Returns the workbook instance for the specified file. """
     return openpyxl.load_workbook(file_path)
@@ -65,7 +69,9 @@ def write_workbook_data(filename, sheets, data):
                 cell = ws.cell(row=i + 1, column=x + 1)
                 cell.value = value
                 if isinstance(value, str):
-                    new_width = len(cell.value) + 10
+                    new_width = len(cell.value) + CELL_PADDING
+                    if new_width > CELL_MAX_WIDTH:
+                        new_width = CELL_MAX_WIDTH
 
                     if len(col_widths) > x:
                         if new_width > col_widths[x]:
