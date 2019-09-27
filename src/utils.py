@@ -4,6 +4,33 @@ from datetime import *
 from src.config import get_config
 
 
+def get_configuration_file_path(file_name):
+    """
+    Returns the path for the specified configuration file.
+    :param str file_name:
+    :return: str
+    """
+    file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], ntpath.basename(file_name))
+    if os.path.exists(file_path) is False:
+        raise FileExistsError(f"{file_name} is an invalid file.")
+
+    return file_path
+
+
+def get_configuration_file(file_name):
+    """
+    Returns the data for the specified configuration file.
+    :param str file_name:
+    :return: str
+    """
+    file_path = get_configuration_file_path(file_name)
+
+    with open(file_path) as fp:
+        contents = fp.read()
+
+    return contents
+
+
 def get_base_sql_code(file_name):
     """
     Returns the file contents in a string.

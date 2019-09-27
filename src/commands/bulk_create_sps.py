@@ -1,17 +1,18 @@
 import sys, traceback
-import src.preference_file_utils
+import src.code_gen_pref_file_utils
 import src.code_gen
 import src.code_gen.utils
 import src.db_utils
+import src.utils
 from src.mssql_connection import init_db, get_db, close
 from src.exceptions import SearchColumnNoIndex
 
 
 def bulk_create_sps(in_filename):
-    filename = src.preference_file_utils.get_configuration_file_path(in_filename)
+    filename = src.utils.get_configuration_file_path(in_filename)
 
     # Get the data for the excel preference file to create the indices file
-    data = src.preference_file_utils.get_excel_preference_file_data(filename)
+    data = src.code_gen_pref_file_utils.get_excel_preference_file_data(filename)
     index_sql_files = []
     for config in data:
         if config['SOURCE_TABLE_SEARCH_COLUMN']:
@@ -37,7 +38,7 @@ def bulk_create_sps(in_filename):
     print("")
 
     # Get the JSON preference files
-    json_files = src.preference_file_utils.create_json_preference_files(filename)
+    json_files = src.code_gen_pref_file_utils.create_json_preference_files(filename)
     for json_file in json_files:
         print("")
         print(f'Executing {json_file}...')
@@ -54,7 +55,7 @@ def bulk_create_sps(in_filename):
 
 
 def create_sp(preference_filename):
-    pref_config = src.preference_file_utils.get_configuration_from_preference_file(preference_filename)
+    pref_config = src.code_gen_pref_file_utils.get_configuration_from_preference_file(preference_filename)
 
     # Init DB connection in the source DB
     init_db({
@@ -77,7 +78,7 @@ def create_sp(preference_filename):
     )
 
     try:
-        src.preference_file_utils.validate_preference_file_config(pref_config, table_definition)
+        src.code_gen_pref_file_utils.validate_preference_file_config(pref_config, table_definition)
     except SearchColumnNoIndex:
         pass
     except Exception as e:

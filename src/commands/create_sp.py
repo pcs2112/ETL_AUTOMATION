@@ -1,4 +1,4 @@
-import src.preference_file_utils
+import src.code_gen_pref_file_utils
 import src.db_utils
 import src.code_gen.utils
 from src.mssql_connection import init_db, close
@@ -11,7 +11,7 @@ def create_sp(preference_filename=''):
         return
 
     try:
-        pref_config = src.preference_file_utils.get_configuration_from_preference_file(preference_filename)
+        pref_config = src.code_gen_pref_file_utils.get_configuration_from_preference_file(preference_filename)
     except FileExistsError as e:
         print(str(e))
         return
@@ -39,7 +39,7 @@ def create_sp(preference_filename=''):
     )
 
     try:
-        src.preference_file_utils.validate_preference_file_config(pref_config, table_definition)
+        src.code_gen_pref_file_utils.validate_preference_file_config(pref_config, table_definition)
     except SearchColumnNoIndex:
         pass
     except Exception as e:

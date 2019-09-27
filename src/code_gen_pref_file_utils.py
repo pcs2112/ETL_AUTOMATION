@@ -11,40 +11,13 @@ from src.mssql_connection import init_db, close
 from src.exceptions import SearchColumnNoIndex, SearchColumnNotFound, SearchColumnInvalidValue
 
 
-def get_configuration_file_path(file_name):
-    """
-    Returns the path for the specified configuration file.
-    :param str file_name:
-    :return: str
-    """
-    file_path = os.path.join(get_config()['ETL_CONFIG_IN_DIR'], ntpath.basename(file_name))
-    if os.path.exists(file_path) is False:
-        raise FileExistsError(f"{file_name} is an invalid file.")
-
-    return file_path
-
-
-def get_configuration_file(file_name):
-    """
-    Returns the data for the specified configuration file.
-    :param str file_name:
-    :return: str
-    """
-    file_path = get_configuration_file_path(file_name)
-
-    with open(file_path) as fp:
-        contents = fp.read()
-
-    return contents
-
-
 def get_configuration_from_preference_file(file_name):
     """
     Returns the staging table configuration from a preference file.
     :param str file_name:
     :return: dict
     """
-    return json.loads(get_configuration_file(file_name))
+    return json.loads(src.utils.get_configuration_file(file_name))
 
 
 def create_json_preference_file(file_name, contents):

@@ -1,18 +1,19 @@
 import ntpath
-import src.preference_file_utils
+import src.code_gen_pref_file_utils
 import src.code_gen
 import src.db_utils
+import src.utils
 
 
 def bulk_create_json_preference_files(in_filename):
-    filename = src.preference_file_utils.get_configuration_file_path(in_filename)
+    filename = src.utils.get_configuration_file_path(in_filename)
     
-    json_files = src.preference_file_utils.create_json_preference_files(filename)
+    json_files = src.code_gen_pref_file_utils.create_json_preference_files(filename)
     print('The following JSON preference files were created:')
     for json_file in json_files:
         print(json_file)
     
-    data = src.preference_file_utils.get_excel_preference_file_data(filename)
+    data = src.code_gen_pref_file_utils.get_excel_preference_file_data(filename)
     index_sql_files = []
     for config in data:
         search_column_index_exists = False
