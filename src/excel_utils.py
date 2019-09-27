@@ -1,23 +1,26 @@
-import xlrd
-import xlwt
+import openpyxl
+from openpyxl.utils import get_column_letter
 
 
 def read_workbook(file_path):
     """ Returns the workbook instance for the specified file. """
-    return xlrd.open_workbook(file_path)
+    return openpyxl.load_workbook(file_path)
 
 
 def read_workbook_columns(wb, sheet_index=0):
     """ Returns a list of columns for the specified workbook sheet. """
-    sheet = wb.sheet_by_index(sheet_index)
+    sheet = wb._sheets[sheet_index]
+    num_columns = sheet.max_column
     columns = []
     
-    for i in range(sheet.ncols):
-        value = sheet.cell_value(0, i)
+    for i in range(1, num_columns + 1):
+        cell_obj = sheet.cell(row=1, column=i)
+        value = cell_obj.value
         if isinstance(value, str):
             value = value.strip()
+
         columns.append(value)
-    
+
     return columns
 
 
@@ -27,18 +30,21 @@ def read_workbook_data(wb, sheet_index=0):
     using the header columns as the keys
     """
     header_columns = read_workbook_columns(wb, sheet_index)
-    sheet = wb.sheet_by_index(sheet_index)
-    num_columns = sheet.ncols
-    num_rows = sheet.nrows
+    sheet = wb._sheets[sheet_index]
+    num_columns = sheet.max_column
+    num_rows = sheet.max_row
     data = []
     
-    for row in range(1, num_rows):
+    for row in range(2, num_rows + 1):
         obj = {}
-        for col in range(num_columns):
-            value = sheet.cell_value(row, col)
+        for col in range(1, num_columns + 1):
+            cell_obj = sheet.cell(row=row, column=col)
+            value = cell_obj.value
             if isinstance(value, str):
                 value = value.strip()
-            obj[header_columns[col]] = value
+            elif value is None:
+                value = ''
+            obj[header_columns[col - 1]] = value
         
         data.append(obj)
     
@@ -47,16 +53,27 @@ def read_workbook_data(wb, sheet_index=0):
 
 def write_workbook_data(filename, sheets, data):
     """ Writes the specified data into the workbook. """
-    wb = xlwt.Workbook(encoding="UTF-8")
+    wb = openpyxl.Workbook()
     
-    for sheet_name in sheets:
-        ws = wb.add_sheet(sheet_name)
+    for sheet_index, sheet_name in enumerate(sheets):
+        wb.create_sheet(sheet_name, sheet_index)
+        ws = wb.active
+        col_widths = []
         
         for i, row in enumerate(data):
-            for x, cell in enumerate(row):
-                ws.write(i, x, cell)
-                
-                if i == 0:
-                    ws.col(x).width = (len(row[x]) + 4) * 367
-    
+            for x, value in enumerate(row):
+                cell = ws.cell(row=i + 1, column=x + 1)
+                cell.value = value
+                if isinstance(value, str):
+                    new_width = len(cell.value) + 10
+
+                    if len(col_widths) > x:
+                        if new_width > col_widths[x]:
+                            col_widths[x] = new_width
+                    else:
+                        col_widths.append(new_width)
+
+        for i, col_width in enumerate(col_widths):
+            ws.column_dimensions[get_column_letter(i + 1)].width = col_width
+            
     wb.save(filename)
