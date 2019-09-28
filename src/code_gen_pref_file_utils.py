@@ -119,7 +119,7 @@ def create_excel_preference_file(in_filename):
         old_filename_new_filename = old_filename + '_' + src.utils.get_filename_date_postfix() + file_extension
         os.rename(out_filename, os.path.join(get_config()['ETL_CONFIG_IN_DIR'], 'old', old_filename_new_filename))
 
-    src.excel_utils.write_workbook_data(out_filename, ['ETL_STORED_PROCEDURES'], rows)
+    src.excel_utils.write_workbook_data(out_filename, ['ETL_STORED_PROCEDURES'], [rows])
     return out_filename
 
 

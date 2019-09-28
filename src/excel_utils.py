@@ -60,11 +60,10 @@ def write_workbook_data(filename, sheets, data):
     wb = openpyxl.Workbook()
     
     for sheet_index, sheet_name in enumerate(sheets):
-        wb.create_sheet(sheet_name, sheet_index)
-        ws = wb.active
+        ws = wb.create_sheet(sheet_name, sheet_index)
         col_widths = []
         
-        for i, row in enumerate(data):
+        for i, row in enumerate(data[sheet_index]):
             for x, value in enumerate(row):
                 cell = ws.cell(row=i + 1, column=x + 1)
                 cell.value = value

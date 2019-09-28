@@ -2,6 +2,15 @@ from src.config import get_config
 from src.mssql_connection import fetch_row, fetch_rows
 from src.utils import split_string
 
+default_columns = {
+    'ID': 1,
+    'INSERT_DTTM': 1,
+    'UPDATE_DTTM': 1,
+    'LST_MOD_USER': 1,
+    'MSTR_LOAD_ID': 1,
+    'ACTIVE_FLAG': 1
+}
+
 
 def get_table_exists(schema_name, table_name):
     """ Checks a table exits. """
@@ -22,6 +31,7 @@ def get_table_definition(db_name, schema_name, table_name, server_name, data_par
     :param str server_name: Server name
     :param str data_partition_column_name: Data partition column name
     :param list excluded_columns: Columns to exclude
+    :param skip_default_columns: Skip adding the default columns
     :return list
     """
     server_name = '' if server_name == '127.0.0.1' or server_name == 'localhost' else server_name
@@ -36,15 +46,6 @@ def get_table_definition(db_name, schema_name, table_name, server_name, data_par
            "and T.name = ? and P.name != 'timestamp' and P.name != 'sysname' order by column_id asc").format(server_name, db_name)
 
     columns = fetch_rows(sql, [schema_name, table_name])
-
-    default_columns = {
-        'ID': 1,
-        'INSERT_DTTM': 1,
-        'UPDATE_DTTM': 1,
-        'LST_MOD_USER': 1,
-        'MSTR_LOAD_ID': 1,
-        'ACTIVE_FLAG': 1
-    }
 
     target_table_column_prefix = get_config()['TARGET_TABLE_COLUMN_PREFIX']
     out_columns = {}
@@ -193,6 +194,7 @@ def get_primary_keys(schema_name, table_name):
     """
 
     results = fetch_rows(sql.format(schema_name, table_name))
+
     columns = []
     for row in results:
         columns.append({
