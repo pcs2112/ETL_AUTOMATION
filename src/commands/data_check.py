@@ -1,5 +1,5 @@
 import os
-import src.compare_tables_utils
+import src.data_check_utils
 import src.excel_utils
 import src.utils
 from src.config import get_config
@@ -8,15 +8,15 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 
-def compare_tables(in_filename):
+def data_check(in_filename):
     filename = src.utils.get_configuration_file_path(in_filename)
-    configs = src.compare_tables_utils.get_excel_preference_file_data(filename)
+    configs = src.data_check_utils.get_excel_preference_file_data(filename)
 
     sheets = []
     data = []
     
     for config in configs:
-        sheet_data = src.compare_tables_utils.compare_tables(config)
+        sheet_data = src.data_check_utils.compare_tables(config)
         if len(sheet_data) > 0:
             sheets.append(config['SOURCE_TABLE'])
             data.append(sheet_data)

@@ -2,4 +2,4 @@ from src.commands.bulk_create_json_preference_files import bulk_create_json_pref
 from src.commands.bulk_create_sps import bulk_create_sps
 from src.commands.create_excel_preference_file import create_excel_preference_file
 from src.commands.create_sp import create_sp
-from src.commands.compare_tables import compare_tables
+from src.commands.data_check import data_check
