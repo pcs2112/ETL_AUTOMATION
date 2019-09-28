@@ -93,10 +93,10 @@ def compare_tables(config):
         tbl_diffs.append([f"PKs are different [src_pk=({pk_to_str(src_tbl_pks)}) tgt_pk=({pk_to_str(tgt_tbl_pks)})]"])
         
     if src_row_ct['count'] < 1:
-        tbl_diffs.append([f"O rows in {config['SOURCE_TABLE']}."])
+        tbl_diffs.append([f"O rows in {config['SOURCE_SCHEMA']}.{config['SOURCE_TABLE']}."])
         
     if tgt_row_ct['count'] < 1:
-        tbl_diffs.append([f"O rows in {config['TARGET_TABLE']}."])
+        tbl_diffs.append([f"O rows in {config['TARGET_SCHEMA']}.{config['TARGET_TABLE']}."])
         
     if len(tbl_diffs) > 0:
         diffs.append(['TABLE ERRORS'])

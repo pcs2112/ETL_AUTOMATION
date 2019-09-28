@@ -20,7 +20,12 @@ def compare_tables(in_filename):
         if len(sheet_data) > 0:
             sheets.append(config['SOURCE_TABLE'])
             data.append(sheet_data)
-
+            
+    if len(data) < 1:
+        print("")
+        print('Nothing to do. aborting.')
+        exit(0)
+        
     filename, file_extension = os.path.splitext(in_filename)
     out_filename = os.path.join(get_config()['ETL_CONFIG_OUT_DIR'], filename + '_DIFFS' + file_extension)
     src.excel_utils.write_workbook_data(out_filename, sheets, data)
