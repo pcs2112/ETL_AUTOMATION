@@ -1,12 +1,46 @@
 import src.excel_utils
 import src.db_utils
+import src.code_gen.utils
+import src.utils
 from src.mssql_connection import init_db, close
 
 
 def get_excel_preference_file_data(file_name):
     """ Returns the preference file data in an array. """
     wb = src.excel_utils.read_workbook(file_name)
-    return src.excel_utils.read_workbook_data(wb)
+    in_data = src.excel_utils.read_workbook_data(wb)
+    out_data = []
+    
+    for i in range(len(in_data)):
+        obj = in_data[i]
+
+        # Get the target table name
+        target_table = src.code_gen.utils.get_target_table_name(obj['SOURCE_TABLE'], obj['TARGET_TABLE'])
+
+        config = {
+            'SOURCE_SERVER': obj['SOURCE_SERVER'],
+            'SOURCE_DATABASE': obj['SOURCE_DATABASE'],
+            'SOURCE_USER': obj.get('SOURCE_USER', ''),
+            'SOURCE_PASSWORD': obj.get('SOURCE_PASSWORD', ''),
+            'SOURCE_DRIVER': src.utils.get_default_value(obj.get('SOURCE_DRIVER', ''), 'SQL Server'),
+            'SOURCE_TRUSTED_CONNECTION': int(
+                src.utils.get_default_value(obj.get('SOURCE_TRUSTED_CONNECTION', ''), '1')),
+            'SOURCE_SCHEMA': obj['SOURCE_SCHEMA'],
+            'SOURCE_TABLE': obj['SOURCE_TABLE'],
+            'TARGET_SERVER': obj['TARGET_SERVER'],
+            'TARGET_DATABASE': obj['TARGET_DATABASE'],
+            'TARGET_USER': obj.get('TARGET_USER', ''),
+            'TARGET_PASSWORD': obj.get('TARGET_PASSWORD', ''),
+            'TARGET_DRIVER': src.utils.get_default_value(obj.get('TARGET_DRIVER', ''), 'SQL Server'),
+            'TARGET_TRUSTED_CONNECTION': int(
+                src.utils.get_default_value(obj.get('TARGET_TRUSTED_CONNECTION', ''), '1')),
+            'TARGET_SCHEMA': obj['TARGET_SCHEMA'],
+            'TARGET_TABLE': target_table
+        }
+
+        out_data.append(config)
+    
+    return out_data
 
 
 def is_data_type_eq(src_column, tgt_column):

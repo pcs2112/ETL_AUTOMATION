@@ -15,8 +15,14 @@ def data_check(in_filename):
     sheets = []
     data = []
     
-    for config in configs:
-        sheet_data = src.data_check_utils.compare_tables(config)
+    for i, config in enumerate(configs):
+        try:
+            sheet_data = src.data_check_utils.compare_tables(config)
+        except Exception as e:
+            print(f"Error on row #{i + 1}:")
+            print(str(e))
+            continue
+            
         if len(sheet_data) > 0:
             sheets.append(config['SOURCE_TABLE'])
             data.append(sheet_data)
