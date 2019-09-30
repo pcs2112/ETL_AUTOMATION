@@ -51,6 +51,8 @@ def get_table_definition(db_name, schema_name, table_name, server_name, data_par
     out_columns = {}
 
     for column in columns:
+        column['original_data_type'] = column['data_type']
+
         if column['column_name'].upper() in default_columns:
             column['target_table_column_name'] = target_table_column_prefix + column['column_name']
         else:

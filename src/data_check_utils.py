@@ -27,6 +27,7 @@ def get_excel_preference_file_data(file_name):
                 src.utils.get_default_value(obj.get('SOURCE_TRUSTED_CONNECTION', ''), '1')),
             'SOURCE_SCHEMA': obj['SOURCE_SCHEMA'],
             'SOURCE_TABLE': obj['SOURCE_TABLE'],
+            'DATA_PARTITION_COLUMN': obj['DATA_PARTITION_COLUMN'],
             'TARGET_SERVER': obj['TARGET_SERVER'],
             'TARGET_DATABASE': obj['TARGET_DATABASE'],
             'TARGET_USER': obj.get('TARGET_USER', ''),
@@ -44,7 +45,7 @@ def get_excel_preference_file_data(file_name):
 
 
 def is_data_type_eq(src_column, tgt_column):
-    is_eq = False if src_column['data_type'] != tgt_column['data_type'] else True
+    is_eq = False if src_column['original_data_type'] != tgt_column['original_data_type'] else True
     return is_eq
 
 
