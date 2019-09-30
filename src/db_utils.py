@@ -31,7 +31,6 @@ def get_table_definition(db_name, schema_name, table_name, server_name, data_par
     :param str server_name: Server name
     :param str data_partition_column_name: Data partition column name
     :param list excluded_columns: Columns to exclude
-    :param skip_default_columns: Skip adding the default columns
     :return list
     """
     server_name = '' if server_name == '127.0.0.1' or server_name == 'localhost' else server_name

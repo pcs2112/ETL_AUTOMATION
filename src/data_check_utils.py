@@ -51,12 +51,12 @@ def is_data_type_eq(src_column, tgt_column):
 
 def is_pk_eq(src_pks, tgt_pks):
     tgt_pks_dict = {}
-    for i, col_name in tgt_pks:
-        tgt_pks_dict[col_name.upper()] = i
+    for i, col in enumerate(tgt_pks):
+        tgt_pks_dict[col['column_name'].upper()] = i
 
     is_eq = True
-    for i, col_name in src_pks:
-        if col_name not in tgt_pks_dict:
+    for i, col in enumerate(src_pks):
+        if col['column_name'].upper() not in tgt_pks_dict:
             is_eq = False
             break
             
